@@ -1,0 +1,13 @@
+*{
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.footerLink{
+  border-left: 1px solid black;
+}
+
+.footerLink.noBorder{
+  border-left: 0;
+}
