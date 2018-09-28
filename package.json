@@ -4,21 +4,27 @@
   "private": true,
   "dependencies": {
     "@material-ui/core": "^3.1.1",
+    "@material-ui/icons": "^3.0.1",
     "change-case": "^3.0.2",
     "dotenv": "^6.0.0",
     "dotenv-webpack": "^1.5.7",
+    "firebase": "^5.5.2",
+    "material-ui-time-picker": "^1.0.0",
     "react": "^16.5.2",
     "react-dom": "^16.5.2",
     "react-redux": "^5.0.7",
     "react-router-dom": "^4.3.1",
     "react-scripts": "1.1.5",
     "redux": "^4.0.0",
+    "redux-devtools-extension": "^2.13.5",
+    "redux-thunk": "^2.3.0",
     "superagent": "^4.0.0-beta.5"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "sass": "sass --watch src/styles/scss:src/styles/css"
   }
 }

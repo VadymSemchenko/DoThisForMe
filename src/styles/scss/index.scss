@@ -5,7 +5,9 @@
 }
 
 .footerLink{
+  display: inline-block;
   border-left: 1px solid black;
+  padding: 0 5px;
 }
 
 .footerLink.noBorder{
