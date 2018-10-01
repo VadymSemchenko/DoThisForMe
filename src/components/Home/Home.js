@@ -1,13 +1,19 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import IconButton from '@material-ui/core/IconButton';
 import Grid from '@material-ui/core/Grid';
 import PlayCircleFilledIcon from '@material-ui/icons/PlayCircleFilled';
 import { Link } from 'react-router-dom';
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemText from '@material-ui/core/ListItemText';
+import Divider from '@material-ui/core/Divider';
+import { connect } from 'react-redux';
+import { func } from 'prop-types';
+import { bindActionCreators } from 'redux';
 
-
-
+import { attemptSignIn, attemptSignOut } from '../../store/actionCreators';
 import { HOW_IT_WORKS, MOTION_CREATE } from '../../constants/routes';
 
 class Home extends Component {
@@ -15,6 +21,7 @@ class Home extends Component {
         motionCode: null
     };
     render() {
+        const { motions, uid } = this.props;
         return (
             <main>
                 <Grid
@@ -43,7 +50,7 @@ class Home extends Component {
                         direction="row"
                         justify="center"
                         >
-                            <Grid item>
+                            {/*<Grid item>
                                 <TextField
                                 placeholder="Enter motion code"
                                 variant="outlined"
@@ -59,8 +66,28 @@ class Home extends Component {
                                 >
                                     Join!
                                 </Button>
-                            </Grid>
+                            </Grid>*/}
                         </Grid>
+                    </Grid>
+                    <Grid item>
+                        <List>
+                            {motions.length > 0 && motions.map((item) => {
+                                const { key, displayName, uid: motionId, value } = item;
+                                const text = uid === motionId ? 'DELETE' : 'JOIN';
+                                const color = uid === motionId ? 'secondary' : 'primary';
+                                return (
+                                    <Fragment key={key +'f'}>
+                                        <ListItem>
+                                            <ListItemText onClick={this.handleSelect} data-uid={motionId}>
+                                                <span>{`${displayName}: ${value}`}</span>
+                                                <Button color={color}>{text}</Button>
+                                            </ListItemText>
+                                        </ListItem>
+                                        <Divider/>
+                                    </Fragment>
+                                );
+                            })}
+                        </List>
                     </Grid>
                     <div>
                         or
@@ -70,6 +97,7 @@ class Home extends Component {
                     color="secondary"
                     component={Link}
                     to={MOTION_CREATE}
+                    disabled={!uid}
                     >
                         I mote!
                     </Button>
@@ -87,6 +115,20 @@ class Home extends Component {
         console.log(this.state.motionCode);
     }
 
+    handleSelect = ({ target }) => {
+        console.log(target.dataset.key);
+    }
+
 }
 
-export default Home;
+const MapStateToProps = ({
+    motionReducer: {
+        motions
+    },
+    authReducer: {
+        uid, displayName
+    }
+}) => ({ motions, uid, displayName });
+const mapDispatchToProps = dispatch => bindActionCreators({ attemptSignIn, attemptSignOut }, dispatch);
+
+export default connect(MapStateToProps, mapDispatchToProps)(Home);
