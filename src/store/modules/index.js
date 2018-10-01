@@ -1,12 +1,7 @@
 import { combineReducers } from 'redux';
-import authReducer, { initialAuthState } from './authReducer';
-import motionReducer, { initialMotionState } from './motionReducer';
-import loadingReducer, { initialLoadingState } from './loadingReducer';
+import authReducer from './authReducer';
+import motionReducer from './motionReducer';
+import loadingReducer from './loadingReducer';
+import errorReducer from './errorReducer';
 
-export const initialState = {
-    authReducer: initialAuthState,
-    motionReducer: initialMotionState,
-    loadingReducer: initialLoadingState,
-  };
-
-  export const reducer = combineReducers({ authReducer, motionReducer, loadingReducer });
+  export const reducer = combineReducers({ authReducer, motionReducer, loadingReducer, errorReducer });

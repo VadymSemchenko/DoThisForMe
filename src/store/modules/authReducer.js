@@ -1,8 +1,8 @@
-import { SIGN_IN, SIGN_OUT  } from '../actionTypes';
+import { SIGN_IN, SIGN_OUT } from '../actionTypes';
 
 export const initialAuthState = {
-    uid: null,
-    displayName: null
+    uid: '',
+    displayName: ''
 };
 
 export default function authReducer(state = initialAuthState, action) {

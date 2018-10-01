@@ -6,6 +6,7 @@ import { connect } from 'react-redux';
 
 import { MOTION_PROCESS } from '../../../constants/routes';
 import { initMotion } from '../../../store/actionCreators';
+import { bindActionCreators } from 'redux';
 
 let inAnHour = new Date();
 inAnHour.setHours(inAnHour.getHours() + 1);
@@ -35,6 +36,7 @@ class OperatorCreate extends Component {
                     name="operatorName"
                     value={displayName}
                     onChange={this.handleTextChange}
+                    disabled
                     />
                 </Grid>
                 <Grid item>
@@ -67,8 +69,6 @@ class OperatorCreate extends Component {
                     <Button
                     variant="raised"
                     color="secondary"
-                    component={Link}
-                    to={MOTION_PROCESS}
                     onClick={this.createMotion}
                     >
                         Create Motion!
@@ -90,21 +90,24 @@ class OperatorCreate extends Component {
         this.setState(() => ({ [name]: value }));
     };
 
-    createMotion = (event) => {
+    createMotion = async (event) => {
         event.preventDefault();
-        const { uid, displayName } = this.props;
+        const { uid, displayName, initMotion, history } = this.props;
         const { value, time } = this.state;
         const newMotion = {
             displayName,
             value,
             uid,
-            time
+            time: time.toLocaleTimeString()
         };
-        initMotion(newMotion);
-
+        const responce = await initMotion(newMotion);
+        if(responce){
+            history.push(MOTION_PROCESS);
+        }
     };
 }
 
 const mapStateToProps = ({ authReducer: { displayName, uid } }) => ({ displayName, uid });
+const mapDispatchToProps = dispatch => bindActionCreators({ initMotion }, dispatch);
 
-export default connect(mapStateToProps)(OperatorCreate);
+export default connect(mapStateToProps, mapDispatchToProps)(OperatorCreate);

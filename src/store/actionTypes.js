@@ -3,3 +3,7 @@ export const START_LOADING = "START_LOADING";
 export const FINISH_LOADING = "FINISH_LOADING";
 export const SIGN_IN = 'SIGN_IN';
 export const SIGN_OUT = 'SIGN_OUT';
+export const SET_ERROR = 'SET_ERROR';
+export const DELETE_ERROR = 'DELETE_ERROR';
+export const SET_NEW_MOTION_KEY = 'SET_NEW_MOTION_KEY';
+export const SET_MOTIONS_ARRAY = 'SET_MOTIONS_ARRAY';

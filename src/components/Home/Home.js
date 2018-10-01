@@ -6,20 +6,15 @@ import { Link } from 'react-router-dom';
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
 import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
-import Divider from '@material-ui/core/Divider';
 import { connect } from 'react-redux';
 import { func } from 'prop-types';
 import { bindActionCreators } from 'redux';
 
-import { attemptSignIn, attemptSignOut } from '../../store/actionCreators';
+import { attemptSignIn, attemptSignOut, throwError } from '../../store/actionCreators';
 import { HOW_IT_WORKS, MOTION_CREATE } from '../../constants/routes';
+import MotionsListItem from '../../shared/MotionsListItem/MotionsListItem';
 
 class Home extends Component {
-    state = {
-        motionCode: null
-    };
     render() {
         const { motions, uid } = this.props;
         return (
@@ -50,42 +45,29 @@ class Home extends Component {
                         direction="row"
                         justify="center"
                         >
-                            {/*<Grid item>
-                                <TextField
-                                placeholder="Enter motion code"
-                                variant="outlined"
-                                onChange={this.handleChange}
-                                name="motionCode"
-                                />
-                            </Grid>
-                            <Grid item>
-                                <Button
-                                variant="contained"
-                                color="primary"
-                                onClick={this.handleJoin}
-                                >
-                                    Join!
-                                </Button>
-                            </Grid>*/}
                         </Grid>
                     </Grid>
                     <Grid item>
                         <List>
-                            {motions.length > 0 && motions.map((item) => {
-                                const { key, displayName, uid: motionId, value } = item;
-                                const text = uid === motionId ? 'DELETE' : 'JOIN';
-                                const color = uid === motionId ? 'secondary' : 'primary';
-                                return (
-                                    <Fragment key={key +'f'}>
-                                        <ListItem>
-                                            <ListItemText onClick={this.handleSelect} data-uid={motionId}>
-                                                <span>{`${displayName}: ${value}`}</span>
-                                                <Button color={color}>{text}</Button>
-                                            </ListItemText>
-                                        </ListItem>
-                                        <Divider/>
-                                    </Fragment>
-                                );
+                            {motions.map((item) => {
+                                const { key, uid: motionAuthorUid } = item;
+                                const isAuthor = uid === motionAuthorUid;
+                                const buttonAttributes = isAuthor
+                                ? {
+                                    text: 'DELETE',
+                                    color: 'secondary',
+                                    buttonHandler: this.handleDelete,
+                                }
+                                : {
+                                    text: 'JOIN',
+                                    color: 'primary',
+                                    buttonHandler: this.handleJoin,
+                                };
+                                return <MotionsListItem
+                                            key={key}
+                                            buttonAttributes={buttonAttributes}
+                                            item={item}
+                                            />;
                             })}
                         </List>
                     </Grid>
@@ -115,9 +97,9 @@ class Home extends Component {
         console.log(this.state.motionCode);
     }
 
-    handleSelect = ({ target }) => {
-        console.log(target.dataset.key);
-    }
+    handleDelete = ({ target: { value } }) => {
+        console.log(value);
+    };
 
 }
 
