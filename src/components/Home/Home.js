@@ -1,116 +1,82 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import IconButton from '@material-ui/core/IconButton';
 import Grid from '@material-ui/core/Grid';
 import PlayCircleFilledIcon from '@material-ui/icons/PlayCircleFilled';
 import { Link } from 'react-router-dom';
-import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
-import List from '@material-ui/core/List';
 import { connect } from 'react-redux';
-import { func } from 'prop-types';
 import { bindActionCreators } from 'redux';
-
-import { attemptSignIn, attemptSignOut, throwError } from '../../store/actionCreators';
+import MotionsList from '../MotionsList';
+import { attemptSignIn, attemptSignOut } from '../../store/actionCreators';
 import { HOW_IT_WORKS, MOTION_CREATE } from '../../constants/routes';
-import MotionsListItem from '../../shared/MotionsListItem/MotionsListItem';
 
 class Home extends Component {
+    static propTypes = {
+        motions: PropTypes.array,
+        uid: PropTypes.string,
+    };
     render() {
-        const { motions, uid } = this.props;
+        const { motions = [], uid } = this.props;
         return (
             <main>
                 <Grid
-                container
-                direction="column"
-                alignItems="center"
+                    container
+                    direction="column"
+                    alignItems="center"
                 >
-                    <Grid item>
-                        <IconButton
-                        component={Link}
-                        to={HOW_IT_WORKS}
-                        >
-                            <PlayCircleFilledIcon color="primary"/>
+                    <Grid item={true}>
+                        <IconButton component={Link} to={HOW_IT_WORKS}>
+                            <PlayCircleFilledIcon color="primary" />
                         </IconButton>
                     </Grid>
-                    <Grid item>
-                        <Link
-                        to={HOW_IT_WORKS}
-                        >
-                        How DoThis4Me Works?
-                        </Link>
+                    <Grid item={true}>
+                        <Link to={HOW_IT_WORKS}>How DoThis4Me Works?</Link>
                     </Grid>
-                    <Grid item>
+                    <Grid item={true}>
                         <Grid
-                        container
-                        direction="row"
-                        justify="center"
-                        >
-                        </Grid>
+                            container={true}
+                            direction="row"
+                            justify="center"
+                        />
                     </Grid>
-                    <Grid item>
-                        <List>
-                            {motions.map((item) => {
-                                const { key, uid: motionAuthorUid } = item;
-                                const isAuthor = uid === motionAuthorUid;
-                                const buttonAttributes = isAuthor
-                                ? {
-                                    text: 'DELETE',
-                                    color: 'secondary',
-                                    buttonHandler: this.handleDelete,
-                                }
-                                : {
-                                    text: 'JOIN',
-                                    color: 'primary',
-                                    buttonHandler: this.handleJoin,
-                                };
-                                return <MotionsListItem
-                                            key={key}
-                                            buttonAttributes={buttonAttributes}
-                                            item={item}
-                                            />;
-                            })}
-                        </List>
+                    <Grid item={true}>
+                        <MotionsList
+                            handleClick={this.handleSelect}
+                            motions={motions}
+                            uid={uid}
+                        />
                     </Grid>
-                    <div>
-                        or
-                    </div>
+                    <div>or</div>
                     <Button
-                    variant="raised"
-                    color="secondary"
-                    component={Link}
-                    to={MOTION_CREATE}
-                    disabled={!uid}
-                    >
-                        I mote!
-                    </Button>
+                        children={'I mote!'}
+                        variant="raised"
+                        color="secondary"
+                        component={Link}
+                        to={MOTION_CREATE}
+                        disabled={!uid}
+                    />
                 </Grid>
-            </main>);
+            </main>
+        );
     }
 
-    handleChange = ({ target: { name, value } }) => {
-        this.setState(() => ({
-            [name]: value
-        }));
-    };
-
-    handleJoin = () => {
-        console.log(this.state.motionCode);
+    handleSelect = (key) => {
+        console.log('motionKey ', key);
     }
-
-    handleDelete = ({ target: { value } }) => {
-        console.log(value);
-    };
 
 }
 
-const MapStateToProps = ({
+const mapStateToProps = ({
     motionReducer: {
-        motions
+        motions,
     },
     authReducer: {
-        uid, displayName
-    }
+        uid,
+        displayName,
+    },
 }) => ({ motions, uid, displayName });
+
 const mapDispatchToProps = dispatch => bindActionCreators({ attemptSignIn, attemptSignOut }, dispatch);
 
-export default connect(MapStateToProps, mapDispatchToProps)(Home);
+export default connect(mapStateToProps, mapDispatchToProps)(Home);

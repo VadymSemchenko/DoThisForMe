@@ -3,9 +3,12 @@ import { Paper, Typography } from '@material-ui/core/';
 
 const NotFound = () => (
     <Paper>
-        <Typography variant='display4' align='center' gutterBottom>
-            Incorrect URL
-        </Typography>
+        <Typography
+            align="center"
+            children={'Incorrect URL'}
+            gutterBottom={true}
+            variant="display4"
+        />
     </Paper>
 );
 

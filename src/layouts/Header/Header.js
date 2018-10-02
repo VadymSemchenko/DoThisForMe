@@ -11,47 +11,42 @@ import { bindActionCreators } from 'redux';
 
 import { attemptSignIn, attemptSignOut, deleteAuthError } from '../../store/actionCreators';
 
-const Header = ({ isLoading, uid, attemptSignIn, attemptSignOut, deleteAuthError, error }) => {
-  const button = uid ? {
-    text: 'Sign Out',
-    onClick: attemptSignOut,
-    color: 'secondary'
-  } : {
-    text: 'Sign In',
-    onClick: attemptSignIn,
-    color: 'primary'
-  };
-  const { color, onClick, text } = button;
+const Header = (props) => {
+  const { isLoading, uid, attemptSignIn, attemptSignOut } = props;
+  const isAuth = !!uid;
+  const btnColor = isAuth ? 'secondary' : 'primary';
+  const btnTitle = isAuth ? 'Sign Out' : 'Sign In';
+  const btnOnClick = isAuth ? attemptSignOut : attemptSignIn;
+  const isError = !!error;
   return (
-   <Fragment>
-    <Dialog
-    open={Boolean(error)}
-    onClose={deleteAuthError}
-    >
-      <DialogTitle id="alert-dialog-title">ERROR!</DialogTitle>
-      <DialogContent>
-        <DialogContentText id="alert-dialog-description">
-          {error}
-        </DialogContentText>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={deleteAuthError} color="primary" autoFocus>
-          Agree
-        </Button>
-      </DialogActions>
-    </Dialog>
-    <AppBar position="static" color="default">
-      <Typography variant='display4' align='center' gutterBottom>
-          Do This For Me
-        </Typography>
-        {isLoading && (
-          <LinearProgress />
-        )}
-        <Button variant="contained" color={color}onClick={onClick}>{text}</Button>
-    </AppBar>
-   </Fragment>
+    <Fragment>
+      <Dialog open={isError} onClose={deleteAuthError}>
+        <DialogTitle>ERROR!</DialogTitle>
+        <DialogContent>
+          <DialogContentText>{error}</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={deleteAuthError}
+            color="primary"
+            autoFocus={true}
+            children={'Agree'}
+          />
+        </DialogActions>
+      </Dialog>
+      <AppBar position="static" color="default">
+        <Typography variant="display4" align="center" gutterBottom={true}>Do This For Me</Typography>
+        {isLoading && <LinearProgress />}
+        <Button
+          variant="contained"
+          color={btnColor}
+          onClick={btnOnClick}
+          children={btnTitle}
+        />
+      </AppBar>
+    </Fragment>
   );
-}
+};
 
 const mapStateToProps = ({ loadingReducer: { isLoading }, authReducer: { uid }, errorReducer: { error } }) => ({ isLoading, uid, error });
 const mapDispatchToProps = dispatch => bindActionCreators({ attemptSignIn, attemptSignOut, deleteAuthError }, dispatch);
@@ -61,6 +56,10 @@ Header.propTypes = {
   isLoading: bool.isRequired,
   attemptSignIn: func.isRequired,
   attemptSignOut: func.isRequired
+};
+
+Header.defaultProps = {
+  uid: '',
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(Header);

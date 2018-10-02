@@ -1,14 +1,15 @@
 import firebase from 'firebase';
 
 const config = {
-    apiKey: "AIzaSyAvrm6_Db0J_2p6snwK-HGDTUGf5S5VNaM",
-    authDomain: "squire-delivery.firebaseapp.com",
-    databaseURL: "https://squire-delivery.firebaseio.com",
-    projectId: "squire-delivery",
-    storageBucket: "squire-delivery.appspot.com",
-    messagingSenderId: "541308684378"
-  };
-  firebase.initializeApp(config);
+  apiKey: process.env.REACT_APP_API_KEY,
+  authDomain: process.env.REACT_APP_AUTH_DOMAIN,
+  databaseURL: process.env.REACT_APP_DB_URL,
+  projectId: process.env.REACT_APP_PROJECT_ID,
+  storageBucket: process.env.REACT_APP_STORAGE_BUCKET,
+  messagingSenderId: process.env.REACT_APP_SENDER_ID,
+};
+
+firebase.initializeApp(config);
 
 export default firebase;
 
