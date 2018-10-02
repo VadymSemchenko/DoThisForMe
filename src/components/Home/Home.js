@@ -7,8 +7,8 @@ import { Link } from 'react-router-dom';
 import Button from '@material-ui/core/Button';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import MotionsList from '../MotionsList';
-import { attemptSignIn, attemptSignOut } from '../../store/actionCreators';
+
+import { attemptSignIn, attemptSignOut, removeMotion } from '../../store/actionCreators';
 import { HOW_IT_WORKS, MOTION_CREATE } from '../../constants/routes';
 
 class Home extends Component {
@@ -64,6 +64,12 @@ class Home extends Component {
     handleSelect = (key) => {
         console.log('motionKey ', key);
     }
+
+    handleDelete = ({ target }) => {
+        console.log(target.id);
+        const { key, value } = target;
+        // removeMotion(value);
+    };
 
 }
 

@@ -71,3 +71,8 @@ export const startListeningToAuthChanges = () => (dispatch) => {
     }
   });
 };
+
+export const removeMotion = key => {
+  console.log(key);
+  motionsRef.child(key).remove();
+};

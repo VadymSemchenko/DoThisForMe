@@ -3,10 +3,11 @@ import { Button, Grid, TextField } from '@material-ui/core';
 import { TimePicker } from 'material-ui-time-picker';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 
 import { MOTION_PROCESS } from '../../../constants/routes';
 import { initMotion } from '../../../store/actionCreators';
-import { bindActionCreators } from 'redux';
+// import { handleTextChange } from '../../../helpers/handleTextChange';
 
 let inAnHour = new Date();
 inAnHour.setHours(inAnHour.getHours() + 1);
@@ -31,11 +32,7 @@ class OperatorCreate extends Component {
             >
                 <Grid item>
                     <TextField
-                    placeholder="Your name"
-                    label="I plan to mote soon"
-                    name="operatorName"
                     value={displayName}
-                    onChange={this.handleTextChange}
                     disabled
                     />
                 </Grid>
@@ -70,12 +67,19 @@ class OperatorCreate extends Component {
                     variant="raised"
                     color="secondary"
                     onClick={this.createMotion}
+                    disabled={!this.state.value}
                     >
                         Create Motion!
                     </Button>
                 </Grid>
             </Grid>
         );
+    }
+
+    handleTextChange = ({ target: { name, value } }) => {
+        this.setState(() => ({
+            [name]: value
+        }));
     }
 
     handleTimeChange = (time) => {
@@ -86,12 +90,7 @@ class OperatorCreate extends Component {
         this.setState((prevState) => ({ clockIsOpen: !prevState.clockIsOpen }));
     }
 
-    handleTextChange = ({target: { name, value }}) => {
-        this.setState(() => ({ [name]: value }));
-    };
-
-    createMotion = async (event) => {
-        event.preventDefault();
+    createMotion = async () => {
         const { uid, displayName, initMotion, history } = this.props;
         const { value, time } = this.state;
         const newMotion = {

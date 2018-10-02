@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import { TextField, Grid } from '@material-ui/core';
 
 class OperatorProcess extends Component {
-    state = {};
     render() {
         return (
             <Grid
@@ -10,10 +9,11 @@ class OperatorProcess extends Component {
             direction="column"
             alignItems="center"
             >
-                <TextField value="motionId"/>
+                <TextField value="motionId" disabled/>
             </Grid>
         );
     }
 }
+
 
 export default OperatorProcess;

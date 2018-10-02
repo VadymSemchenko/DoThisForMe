@@ -36,4 +36,5 @@ App.defaultProps = {
 
 const mapStateToProps = ({ authReducer: { uid } }) => ({ uid });
 
-export default connect(mapStateToProps)(App);
+export default withRouter(connect(mapStateToProps)(App));
+// export default connect(mapStateToProps)(App);
