@@ -1,22 +1,26 @@
 import { SIGN_IN, SIGN_OUT } from '../actionTypes';
 
-export const initialAuthState = {
+const initialAuthState = {
     uid: '',
-    displayName: ''
+    displayName: '',
 };
 
 export default function authReducer(state = initialAuthState, action) {
     switch(action.type) {
         case SIGN_IN:
-        const { uid, displayName } = action.payload;
+            const { uid, displayName } = action.payload;
             return {
-        ...state, uid, displayName
-        };
+                ...state,
+                uid,
+                displayName,
+            };
         case SIGN_OUT:
             return {
-        ...state, uid: null, displayName: null
-        };
+                ...state,
+                displayName: null,
+                uid: null,
+            };
         default:
             return state;
-        }
-  }
+    }
+}

@@ -4,4 +4,11 @@ import motionReducer from './motionReducer';
 import loadingReducer from './loadingReducer';
 import errorReducer from './errorReducer';
 
-  export const reducer = combineReducers({ authReducer, motionReducer, loadingReducer, errorReducer });
+const rootReducer = {
+  authReducer,
+  motionReducer,
+  loadingReducer,
+  errorReducer,
+};
+
+export const reducer = combineReducers(rootReducer);
