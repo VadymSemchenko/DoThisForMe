@@ -11,8 +11,7 @@ import { bindActionCreators } from 'redux';
 
 import { attemptSignIn, attemptSignOut, deleteAuthError } from '../../store/actionCreators';
 
-const Header = (props) => {
-  const { isLoading, uid, attemptSignIn, attemptSignOut } = props;
+const Header = ({ isLoading, uid, attemptSignIn, attemptSignOut, error }) => {
   const isAuth = !!uid;
   const btnColor = isAuth ? 'secondary' : 'primary';
   const btnTitle = isAuth ? 'Sign Out' : 'Sign In';

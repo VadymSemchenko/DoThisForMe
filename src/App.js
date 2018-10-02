@@ -1,5 +1,5 @@
 import React, { Fragment } from 'react';
-import { Route, Switch } from 'react-router-dom';
+import { Route, Switch, withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 
@@ -13,8 +13,8 @@ const App = ({ uid }) => (
   <Fragment>
     <Layouts.Header/>
     <Switch>
-      <PrivateRoute path={Routes.MOTION_CREATE} component={Components.OperatorCreate} condition={uid} redirectRoute={Routes.SIGN_IN} />
-      <PrivateRoute path={Routes.MOTION_PROCESS} component={Components.OperatorProcess} condition={uid} redirectRoute={Routes.SIGN_IN} />
+      <PrivateRoute path={Routes.MOTION_CREATE} component={Components.OperatorCreate} condition={uid} redirectRoute={Routes.HOME} />
+      <PrivateRoute path={Routes.MOTION_PROCESS} component={Components.OperatorProcess} condition={uid} redirectRoute={Routes.HOME} />
       <Route exact path={Routes.HOME} component={Components.Home} />
       <Route path={Routes.PRIVACY_POLICY} component={Screens.InfoPage} />
       <Route path={Routes.TERMS_OF_SERVICE} component={Screens.InfoPage} />
@@ -37,4 +37,3 @@ App.defaultProps = {
 const mapStateToProps = ({ authReducer: { uid } }) => ({ uid });
 
 export default withRouter(connect(mapStateToProps)(App));
-// export default connect(mapStateToProps)(App);

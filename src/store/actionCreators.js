@@ -1,15 +1,13 @@
 import * as actionTypes from './actionTypes';
 import { database, auth, googleAuthProvider } from '../firebase';
-// import { persistor } from './';
 
 const motionsRef = database.ref('motions');
 
 export const initMotion = (motion) => (dispatch) => {
-  const { uid } = motion;
   dispatch({ type: actionTypes.START_LOADING });
   return motionsRef.push(motion)
     .then(({ key }) => {
-      dispatch({ type: actionTypes.SET_NEW_MOTION_KEY, payload: { key, uid } });
+      dispatch({ type: actionTypes.SET_NEW_MOTION_KEY, payload: key });
       dispatch({ type: actionTypes.FINISH_LOADING });
       return true;
     })
@@ -40,7 +38,6 @@ export const deleteAuthError = () => {
 
 export const startListeningForMotionsListChanges = () => (dispatch) => {
   motionsRef.on('value', (snapshot) => {
-    // persistor.purge();
     const motionsArray = [];
     const snapshotValue = snapshot.val();
     for (let key in snapshotValue) {
@@ -72,7 +69,8 @@ export const startListeningToAuthChanges = () => (dispatch) => {
   });
 };
 
-export const removeMotion = key => {
-  console.log(key);
+export const removeMotion = (key) => {
   motionsRef.child(key).remove();
 };
+
+export const joinMotion = (key) => ({ type: actionTypes.SET_NEW_MOTION_KEY, payload: key });

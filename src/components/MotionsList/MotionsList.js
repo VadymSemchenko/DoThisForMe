@@ -14,6 +14,7 @@ export default class MotionList extends React.Component {
   };
 
   render() {
+    console.log(this.props);
     const { motions } = this.props;
     return (
       <List>{motions.map(this.renderListItem)}</List>
@@ -23,22 +24,22 @@ export default class MotionList extends React.Component {
   renderListItem = (listItem) => {
     const { key, displayName, uid, value } = listItem;
     const isAuthor = (uid === this.props.uid);
-    const text = isAuthor ? 'DELETE' : 'JOIN';
-    const color = isAuthor ? 'secondary' : 'primary';
+    const btnText = isAuthor ? 'DELETE' : 'JOIN';
+    const btnColor = isAuthor ? 'secondary' : 'primary';
     return (
-      <React.Fragment key={key}>
+      <List key={key}>
         <ListItem>
           <ListItemText>
             <span>{`${displayName}: ${value}`}</span>
             <Button
-              color={color}
-              onClick={() => this.props.handleClick(key)}
-              children={text}
+              color={btnColor}
+              onClick={() => {this.props.handleClick(key)}}
+              children={btnText}
             />
           </ListItemText>
         </ListItem>
         <Divider/>
-      </React.Fragment>
+      </List>
     );
   }
 }

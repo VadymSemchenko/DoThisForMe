@@ -8,8 +8,9 @@ import Button from '@material-ui/core/Button';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
-import { attemptSignIn, attemptSignOut, removeMotion } from '../../store/actionCreators';
+import { attemptSignIn, attemptSignOut, removeMotion, joinMotion } from '../../store/actionCreators';
 import { HOW_IT_WORKS, MOTION_CREATE } from '../../constants/routes';
+import MotionsList from '../MotionsList/MotionsList';
 
 class Home extends Component {
     static propTypes = {
@@ -42,7 +43,7 @@ class Home extends Component {
                     </Grid>
                     <Grid item={true}>
                         <MotionsList
-                            handleClick={this.handleSelect}
+                            handleClick={this.handleClick}
                             motions={motions}
                             uid={uid}
                         />
@@ -61,14 +62,13 @@ class Home extends Component {
         );
     }
 
-    handleSelect = (key) => {
-        console.log('motionKey ', key);
-    }
-
-    handleDelete = ({ target }) => {
-        console.log(target.id);
-        const { key, value } = target;
-        // removeMotion(value);
+    handleClick = ({ condition, key }) => {
+        const { joinMotion } = this.props;
+        if(condition){
+            removeMotion(key)
+         } else{
+             joinMotion(key)
+        }
     };
 
 }
@@ -83,6 +83,6 @@ const mapStateToProps = ({
     },
 }) => ({ motions, uid, displayName });
 
-const mapDispatchToProps = dispatch => bindActionCreators({ attemptSignIn, attemptSignOut }, dispatch);
+const mapDispatchToProps = dispatch => bindActionCreators({ attemptSignIn, attemptSignOut, joinMotion }, dispatch);
 
 export default connect(mapStateToProps, mapDispatchToProps)(Home);

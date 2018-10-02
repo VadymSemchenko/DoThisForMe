@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { FormControl, TextField } from '@material-ui/core';
-import { handleTextChange } from '../../../helpers/handleTextChange';
 
 class Requestor extends Component {
     state = {
@@ -28,7 +27,7 @@ class Requestor extends Component {
                         placeholder="Please, buy something forme"
                         name="value"
                         value={value}
-                        onChange={handleTextChange}
+                        onChange={}
                         multiline
                         rows="5"
                     />
