@@ -1,14 +1,11 @@
 import changeCase from 'change-case';
 import { HOME } from '../constants/routes';
 
-export const routeToLink = (route) => {
+export const routeToText = route => {
     const text = (
         (route === HOME)
             ? 'Home'
             : changeCase.titleCase(route.slice(1))
     );
-    return {
-        route,
-        text,
-    }
+    return text;
 };

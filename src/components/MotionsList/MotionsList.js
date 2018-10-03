@@ -1,12 +1,13 @@
-import React from 'react';
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import ListItem from '@material-ui/core/ListItem';
 import Divider from '@material-ui/core/Divider';
 import ListItemText from '@material-ui/core/ListItemText';
 import List from '@material-ui/core/List';
 import Button from '@material-ui/core/Button';
+import { connect } from 'react-redux';
 
-export default class MotionList extends React.Component {
+class MotionList extends Component {
   static propTypes = {
     handleClick: PropTypes.func.isRequired,
     motions: PropTypes.array.isRequired,
@@ -14,7 +15,6 @@ export default class MotionList extends React.Component {
   };
 
   render() {
-    console.log(this.props);
     const { motions } = this.props;
     return (
       <List>{motions.map(this.renderListItem)}</List>
@@ -23,7 +23,8 @@ export default class MotionList extends React.Component {
 
   renderListItem = (listItem) => {
     const { key, displayName, uid, value } = listItem;
-    const isAuthor = (uid === this.props.uid);
+    const { uid: authId } = this.props;
+    const isAuthor = (uid === authId);
     const btnText = isAuthor ? 'DELETE' : 'JOIN';
     const btnColor = isAuthor ? 'secondary' : 'primary';
     return (
@@ -31,11 +32,13 @@ export default class MotionList extends React.Component {
         <ListItem>
           <ListItemText>
             <span>{`${displayName}: ${value}`}</span>
+            {authId &&
             <Button
               color={btnColor}
-              onClick={() => {this.props.handleClick(key)}}
+              onClick={() => {this.props.handleClick({ condition: isAuthor, key })}}
               children={btnText}
-            />
+              disabled={!authId}
+            />}
           </ListItemText>
         </ListItem>
         <Divider/>
@@ -43,3 +46,7 @@ export default class MotionList extends React.Component {
     );
   }
 }
+
+const mapStateToProps = ({ authReducer: { uid } }) => ({ uid });
+
+export default connect(mapStateToProps)(MotionList);

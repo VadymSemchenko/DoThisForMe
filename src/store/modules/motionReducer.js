@@ -2,10 +2,7 @@ import { SET_NEW_MOTION_KEY, SET_MOTIONS_ARRAY } from '../actionTypes';
 
 export const initialMotionState = {
     motions: [],
-    newMotion: {
-        uid: '',
-        key: ''
-    }
+    newMotion: ''
 };
 
 export default function motionReducer(state = initialMotionState, action) {

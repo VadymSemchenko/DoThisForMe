@@ -1,5 +1,6 @@
 import * as actionTypes from './actionTypes';
 import { database, auth, googleAuthProvider } from '../firebase';
+import { REQUESTOR_START } from '../constants/routes';
 
 const motionsRef = database.ref('motions');
 
@@ -32,7 +33,7 @@ export const attemptSignOut = () => {
     return { type: actionTypes.START_LOADING };
 };
 
-export const deleteAuthError = () => {
+export const deleteError = () => {
   return { type: actionTypes.DELETE_ERROR };
 };
 
@@ -73,4 +74,29 @@ export const removeMotion = (key) => {
   motionsRef.child(key).remove();
 };
 
-export const joinMotion = (key) => ({ type: actionTypes.SET_NEW_MOTION_KEY, payload: key });
+export const joinMotion = ({ key, history } ) => {
+  console.log('KEY', typeof key);
+  history.push(`${REQUESTOR_START}/?motionkey=${key}`);
+  return { type: actionTypes.SET_NEW_MOTION_KEY, payload: key }
+};
+
+export const getMotion = (key) => dispatch => {
+  dispatch({ type: actionTypes.START_LOADING });
+  const result = motionsRef.child(key).once('value')
+    .then(snapshot => {
+      dispatch({ type: actionTypes.FINISH_LOADING });
+      return snapshot.val();
+    })
+    .catch(({ message }) => {
+      dispatch({
+        type: actionTypes.SET_ERROR,
+        payload: message
+      })
+    })
+  return result;
+};
+
+export const throwError = message => ({
+  type: actionTypes.SET_ERROR,
+  payload: message
+});

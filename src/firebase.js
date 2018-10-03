@@ -10,9 +10,17 @@ const config = {
 };
 
 firebase.initializeApp(config);
-
 export default firebase;
-
 export const database = firebase.database();
 export const auth = firebase.auth();
 export const googleAuthProvider = new firebase.auth.GoogleAuthProvider();
+export const uiConfig = {
+  // Popup signin flow rather than redirect flow.
+  signInFlow: 'popup',
+  // Redirect to /signedIn after sign in is successful. Alternatively you can provide a callbacks.signInSuccess function.
+  // signInSuccessUrl: '/signedIn',
+  // We will display Google and Facebook as auth providers.
+  signInOptions: [
+    firebase.auth.GoogleAuthProvider.PROVIDER_ID
+  ]
+};

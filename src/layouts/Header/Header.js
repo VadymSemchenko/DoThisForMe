@@ -8,47 +8,61 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import { connect } from "react-redux";
 import { bindActionCreators } from 'redux';
+import { withRouter } from 'react-router-dom';
 
-import { attemptSignIn, attemptSignOut, deleteAuthError } from '../../store/actionCreators';
+import { attemptSignIn, attemptSignOut, deleteError } from '../../store/actionCreators';
+import { SIGN_IN } from '../../constants/routes';
 
-const Header = ({ isLoading, uid, attemptSignIn, attemptSignOut, error }) => {
+const Header = ({
+  isLoading,
+  uid,
+  attemptSignIn,
+  attemptSignOut,
+  error,
+  deleteError,
+  location: {
+    pathname
+  }
+}) => {
   const isAuth = !!uid;
   const btnColor = isAuth ? 'secondary' : 'primary';
   const btnTitle = isAuth ? 'Sign Out' : 'Sign In';
   const btnOnClick = isAuth ? attemptSignOut : attemptSignIn;
   const isError = !!error;
+  const needsAuthButton = pathname !== SIGN_IN;
   return (
     <Fragment>
-      <Dialog open={isError} onClose={deleteAuthError}>
+      <Dialog open={isError} onClose={deleteError}>
         <DialogTitle>ERROR!</DialogTitle>
         <DialogContent>
           <DialogContentText>{error}</DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button
-            onClick={deleteAuthError}
+            onClick={deleteError}
             color="primary"
             autoFocus={true}
-            children={'Agree'}
+            children={'OK'}
           />
         </DialogActions>
       </Dialog>
       <AppBar position="static" color="default">
         <Typography variant="display4" align="center" gutterBottom={true}>Do This For Me</Typography>
         {isLoading && <LinearProgress />}
+        {needsAuthButton &&
         <Button
           variant="contained"
           color={btnColor}
           onClick={btnOnClick}
           children={btnTitle}
-        />
+        />}
       </AppBar>
     </Fragment>
   );
 };
 
 const mapStateToProps = ({ loadingReducer: { isLoading }, authReducer: { uid }, errorReducer: { error } }) => ({ isLoading, uid, error });
-const mapDispatchToProps = dispatch => bindActionCreators({ attemptSignIn, attemptSignOut, deleteAuthError }, dispatch);
+const mapDispatchToProps = dispatch => bindActionCreators({ attemptSignIn, attemptSignOut, deleteError }, dispatch);
 
 Header.propTypes = {
   uid: string.isRequired,
@@ -57,8 +71,4 @@ Header.propTypes = {
   attemptSignOut: func.isRequired
 };
 
-Header.defaultProps = {
-  uid: '',
-};
-
-export default connect(mapStateToProps, mapDispatchToProps)(Header);
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(Header));

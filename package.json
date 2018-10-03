@@ -8,11 +8,12 @@
     "change-case": "^3.0.2",
     "classnames": "^2.2.6",
     "dotenv": "^6.0.0",
-    "dot2env-webpack": "^1.5.7",
     "firebase": "^5.5.2",
     "material-ui-time-picker": "^1.0.0",
+    "query-string": "^6.2.0",
     "react": "^16.5.2",
     "react-dom": "^16.5.2",
+    "react-firebaseui": "^3.0.7",
     "react-loader-spinner": "^2.0.6",
     "react-redux": "^5.0.7",
     "react-router-dom": "^4.3.1",
@@ -29,5 +30,8 @@
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
     "sass": "sass --watch src/styles/scss:src/styles/css"
+  },
+  "devDependencies": {
+    "dotenv-webpack": "^1.5.7"
   }
 }

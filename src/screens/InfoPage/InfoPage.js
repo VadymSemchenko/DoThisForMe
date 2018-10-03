@@ -1,10 +1,14 @@
 import React from 'react';
-import { PRIVACY_POLICY, TERMS_OF_SERVICE } from '../../constants/routes';
+import { Typography } from "@material-ui/core";
+import { routeToText } from '../../helpers/routeToText';
 
-const InfoPage = props => {
-    console.log(props);
-    const { pathname } = props.location;
-    return <span>{pathname}</span>
-}
+const InfoPage = ({ location: { pathname } }) => (
+    <Typography
+        variant="display4"
+        align="center"
+        gutterBottom={true}
+        children={routeToText(pathname)}
+    />
+);
 
 export default InfoPage;

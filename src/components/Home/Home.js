@@ -1,10 +1,9 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
-import IconButton from '@material-ui/core/IconButton';
-import Grid from '@material-ui/core/Grid';
+import { IconButton, Button, Grid } from '@material-ui/core/';
+
 import PlayCircleFilledIcon from '@material-ui/icons/PlayCircleFilled';
 import { Link } from 'react-router-dom';
-import Button from '@material-ui/core/Button';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
@@ -48,26 +47,29 @@ class Home extends Component {
                             uid={uid}
                         />
                     </Grid>
-                    <div>or</div>
-                    <Button
-                        children={'I mote!'}
-                        variant="raised"
-                        color="secondary"
-                        component={Link}
-                        to={MOTION_CREATE}
-                        disabled={!uid}
-                    />
+                    {uid &&
+                        <Fragment>
+                            <div>or</div>
+                            <Button
+                                children={'I mote!'}
+                                color='secondary'
+                                disabled={!uid}
+                                component={Link}
+                                to={MOTION_CREATE}
+                            />
+                        </Fragment>
+                    }
                 </Grid>
             </main>
         );
     }
 
     handleClick = ({ condition, key }) => {
-        const { joinMotion } = this.props;
+        const { joinMotion, history } = this.props;
         if(condition){
             removeMotion(key)
          } else{
-             joinMotion(key)
+             joinMotion({ key, history })
         }
     };
 
