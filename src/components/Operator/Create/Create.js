@@ -7,7 +7,6 @@ import { bindActionCreators } from 'redux';
 
 import { MOTION_PROCESS } from '../../../constants/routes';
 import { initMotion } from '../../../store/actionCreators';
-// import { handleTextChange } from '../../../helpers/handleTextChange';
 
 let inAnHour = new Date();
 inAnHour.setHours(inAnHour.getHours() + 1);
@@ -94,15 +93,18 @@ class OperatorCreate extends Component {
         const { uid, displayName, initMotion, history } = this.props;
         const { value, time } = this.state;
         const newMotion = {
-            displayName,
-            value,
-            uid,
-            time: time.toLocaleTimeString()
+            operator: {
+                displayName,
+                uid
+            },
+            task: {
+                name: value
+            },
+            time: {
+                finishTime: time.getTime()
+            }
         };
-        const responce = await initMotion(newMotion);
-        if(responce){
-            history.push(MOTION_PROCESS);
-        }
+        initMotion({ newMotion, history });
     };
 }
 

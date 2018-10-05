@@ -1,56 +1,105 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { Grid, FormControl, Typography, TextField, FormControlLabel, FormGroup, FormLabel } from '@material-ui/core';
-import queryString from 'query-string';
+import { Grid, Button, Typography, TextField, FormControlLabel, FormGroup, FormLabel, CircularProgress, Paper } from '@material-ui/core';
+import moment from 'moment';
+import CountdownTimer from 'react-awesome-countdowntimer';
 
-import { getMotion } from '../../../store/actionCreators';
+import {
+    getMotion,
+    throwError,
+    initDeal,
+    checkMotionForRequestorDeals
+} from '../../../store/actionCreators';
+import { runInThisContext } from 'vm';
 
 class Requestor extends Component {
 
     state = {
-        textValue: '',
-        moneyValue: '10',
-        currentMotion: {}
+        inputs: {
+            text: '',
+            money: '10'
+        },
+        isLoaded: false
     };
 
-    // static getDerivedStateFromProps = async ({ newMotion, getMotion }) => {
-    //     const deal = await getMotion(newMotion);
-    //     console.log(deal);
-    //     return { deal: deal };
-    // };
-
     async componentDidMount() {
-        const { newMotion, getMotion, location: { search } } = this.props;
-        const currentMotion = await getMotion(queryString.parse(search).motionkey);
-        console.log(currentMotion);
-        this.setState(() => ({
-            currentMotion
-        }));
+        const {
+            getMotion,
+            newMotionItem,
+            location: { pathname },
+            history,
+            requestor: { uid },
+            checkMotionForRequestorDeals
+            } = this.props;
+            console.log('PROPS', this.props);
+            const { key } = newMotionItem;
+        if(Object.keys(newMotionItem).length === 0){
+            getMotion(pathname);
+        }
+        const result = await checkMotionForRequestorDeals({
+            key,
+            history,
+            uid
+        });
+        console.log('RESULT', result);
+        this.setState(() => ({ isLoaded: true }));
     }
 
     render() {
-        const { displayName, newMotion } = this.props;
-        const { textValue, moneyValue, currentMotion: { value } }= this.state;
+        const { isLoaded, text, money } = this.state;
+        if(!isLoaded){
+            return (
+                <Paper>
+                    <CircularProgress color='secondary'/>
+                    <CircularProgress color='secondary'/>
+                    <CircularProgress color='secondary'/>
+                    <CircularProgress color='secondary'/>
+                    <CircularProgress color='secondary'/>
+                </Paper>);
+        }
+        const {
+            requestor,
+            newMotionItem: {
+                operator,
+                task,
+                time: {
+                    finishTime
+                }
+            },
+        } = this.props;
         return (
             <Grid
-                container
-                direction="column"
-                alignItems="center"
+            container
+            direction="column"
+            alignItems="center"
             >
                 <Grid item>
                     <Typography
-                        children={value}
-                        variant="display1"
+                        children={task.name}
+                        variant="display3"
                         align="center"
                         gutterBottom
                     />
                 </Grid>
                 <Grid item>
+                    <Typography
+                        children={operator.displayName}
+                        variant="display2"
+                        align="center"
+                        gutterBottom
+                    />
+                </Grid>
+                <Grid item>
+                    <CountdownTimer
+                        endDate={moment(finishTime)}
+                    />
+                </Grid>
+                <Grid item>
                     <TextField
                         placeholder="Please, buy something for me"
-                        name="textValue"
-                        value={textValue}
+                        name="text"
+                        value={text}
                         onChange={this.handleTextChange}
                         multiline
                         rows="5"
@@ -62,30 +111,73 @@ class Requestor extends Component {
                             <FormControlLabel
                                 label="UAH"
                                 control={<TextField
-                                            name="moneyValue"
-                                            value={moneyValue}
+                                            name="money"
+                                            value={money}
                                             onChange={this.handleTextChange}
                                         />}
                             />
                         </FormGroup>
                 </Grid>
+                <Button
+                    variant="raised"
+                    color="primary"
+                    onClick={
+                        this.handleSubmit
+                    }
+                    children="Submit"
+                />
             </Grid>
         );
     }
 
     handleTextChange = ({ target: { name, value } }) => {
-        this.setState(() => ({
-            [name]: value
+        this.setState(({ inputs }) => ({
+            inputs: {
+                ...inputs,
+                [name]: value
+            }
         }));
     };
 
     handleSubmit = () => {
-
-    }
+        const {
+            inputs: {
+                text,
+                money
+            }
+        } = this.state;
+        const {
+            requestor,
+            initDeal,
+            history,
+            newMotionItem: {
+                operator,
+                key
+            },
+        } = this.props;
+            const newDeal = {
+                text,
+                currentBid: money,
+                motionReference: key,
+                requestor,
+                operator,
+                accepted: {
+                    requestor: true,
+                    operator: false,
+                    rejected: false
+                }
+            };
+           initDeal({ newDeal, history });
+        };
 
 }
 
-const mapStateToProps = ({ authReducer: { uid, displayName }, motionReducer: { newMotion } }) => ({ newMotion });
-const mapDispatchToProps = dispatch => bindActionCreators({ getMotion }, dispatch);
+const mapStateToProps = ({
+    authReducer: requestor,
+    motionReducer: {
+        newMotionItem
+    }
+}) => ({ requestor, newMotionItem });
+const mapDispatchToProps = dispatch => bindActionCreators({ getMotion, throwError, initDeal, checkMotionForRequestorDeals }, dispatch);
 
 export default connect(mapStateToProps, mapDispatchToProps)(Requestor);

@@ -11,6 +11,7 @@ import { bindActionCreators } from 'redux';
 import { withRouter } from 'react-router-dom';
 
 import { attemptSignIn, attemptSignOut, deleteError } from '../../store/actionCreators';
+import { clearStorage } from '../../store/';
 import { SIGN_IN } from '../../constants/routes';
 
 const Header = ({
@@ -56,6 +57,11 @@ const Header = ({
           onClick={btnOnClick}
           children={btnTitle}
         />}
+        <Button
+          onClick={clearStorage}
+          variant='outlined'
+          children='clear storage'
+        />
       </AppBar>
     </Fragment>
   );

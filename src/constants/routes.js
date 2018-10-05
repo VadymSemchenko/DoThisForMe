@@ -6,7 +6,8 @@ export const ABOUT_US = '/about_us';
 export const HOW_IT_WORKS = '/how-it-works';
 export const MOTION_CREATE = '/motion/create';
 export const MOTION_PROCESS = '/motion/process';
-export const REQUESTOR_START = '/requestor-start';
+export const MOTIONS = '/motions';
+export const DEALS = '/deals';
 export const linkRoutes = [
     PRIVACY_POLICY,
     TERMS_OF_SERVICE,

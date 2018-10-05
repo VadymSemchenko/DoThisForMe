@@ -10,7 +10,6 @@ import queryString from 'query-string';
 
 const PrivateRoute = (props) => {
   const { component: Component, condition, redirectRoute = '', location: { pathname, search }, throwError, ...rest } = props;
-  console.log(props);
   let finalRoute;
   if(!condition){
     let message;

@@ -7,7 +7,11 @@ import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
-import { attemptSignIn, attemptSignOut, removeMotion, joinMotion } from '../../store/actionCreators';
+import {attemptSignIn,
+    attemptSignOut,
+    removeMotion,
+    joinMotion
+} from '../../store/actionCreators';
 import { HOW_IT_WORKS, MOTION_CREATE } from '../../constants/routes';
 import MotionsList from '../MotionsList/MotionsList';
 
@@ -65,11 +69,11 @@ class Home extends Component {
     }
 
     handleClick = ({ condition, key }) => {
-        const { joinMotion, history } = this.props;
+        const { joinMotion, history, uid } = this.props;
         if(condition){
-            removeMotion(key)
+            removeMotion(key);
          } else{
-             joinMotion({ key, history })
+            joinMotion({ key, history, uid });
         }
     };
 

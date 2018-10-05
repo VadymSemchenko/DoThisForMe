@@ -2,10 +2,10 @@ import { createStore, applyMiddleware } from 'redux';
 import thunk from 'redux-thunk';
 import { composeWithDevTools } from 'redux-devtools-extension';
 import { persistStore, persistReducer } from 'redux-persist';
-import storage from 'redux-persist/lib/storage';
+import storage from 'localforage';
 import autoMergeLevel2 from 'redux-persist/lib/stateReconciler/autoMergeLevel2';
 
-import { reducer as rootReducer } from './modules';
+import { reducer as rootReducer } from './reducers';
 import { startListeningForMotionsListChanges, startListeningToAuthChanges } from './actionCreators';
 
 const persistConfig = {
@@ -25,3 +25,7 @@ const configStore = () => {
     };
 
 export default configStore();
+
+export const clearStorage = () => {
+    storage.clear();
+};
