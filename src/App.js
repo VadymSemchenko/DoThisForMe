@@ -10,7 +10,6 @@ import * as Layouts from './layouts';
 import * as Screens from './screens';
 
 const App = ({ uid }) => {
-  console.log('MOTION_SCREEN', Components.MotionScreen);
   return (
     <Router>
       <Fragment>
@@ -18,7 +17,7 @@ const App = ({ uid }) => {
         <Switch>
           <PrivateRoute path={Routes.MOTION_CREATE} component={Components.OperatorCreate} condition={uid} redirectRoute={Routes.SIGN_IN} />
           <PrivateRoute path={`${Routes.MOTIONS}/:motionId`} component={Components.RequestorStart} condition={uid} redirectRoute={Routes.SIGN_IN} />
-          <PrivateRoute path={`${Routes.DEALS}/:motionId/:requestorId`} component={Components.BidScreen} condition={uid} redirectRoute={Routes.SIGN_IN} />
+          <PrivateRoute path={`${Routes.DEALS}/:motionId/:requestorId`} component={Components.DealScreen} condition={uid} redirectRoute={Routes.SIGN_IN} />
           <PrivateRoute path={`${Routes.DEALS}/:motionId`} component={Components.MotionScreen} condition={uid} redirectRoute={Routes.SIGN_IN} />
           <PrivateRoute path={Routes.SIGN_IN} component={Components.SignIn} condition={!uid} />
           <Route exact path={Routes.HOME} component={Components.Home} />

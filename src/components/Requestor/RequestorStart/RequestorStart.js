@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import { func, object, shape, string, number, oneOfType, bool } from 'prop-types';
 import { Grid, Button, Typography, TextField, FormControlLabel, FormGroup, FormLabel, CircularProgress, Paper } from '@material-ui/core';
 import moment from 'moment';
 import CountdownTimer from 'react-awesome-countdowntimer';
@@ -9,9 +10,11 @@ import {
     getMotion,
     throwError,
     initDeal,
-    checkMotionForRequestorDeals
+    checkMotionForRequestorDeals,
+    unsetNewMotionItem
 } from '../../../store/actionCreators';
-import { runInThisContext } from 'vm';
+import { newMotionInterface } from '../../../constants/interfaces';
+import { REQUESTOR } from '../../../constants/userStatus';
 
 class Requestor extends Component {
 
@@ -20,42 +23,96 @@ class Requestor extends Component {
             text: '',
             money: '10'
         },
-        isLoaded: false
+        checked: false
     };
 
-    async componentDidMount() {
+    static propTypes = {
+        isLoading: bool.isRequired,
+        getMotion: func.isRequired,
+        throwError: func.isRequired,
+        initDeal: func.isRequired,
+        checkMotionForRequestorDeals: func.isRequired,
+        unsetNewMotionItem: func.isRequired,
+        requestor: shape({
+            uid: string,
+            displayName: string
+        }).isRequired,
+        newMotionItem: newMotionInterface
+    };
+
+    static getDerivedStateFromProps(nextProps, prevState) {
         const {
-            getMotion,
-            newMotionItem,
-            location: { pathname },
-            history,
-            requestor: { uid },
-            checkMotionForRequestorDeals
-            } = this.props;
-            console.log('PROPS', this.props);
-            const { key } = newMotionItem;
-        if(Object.keys(newMotionItem).length === 0){
+                getMotion,
+                newMotionItem,
+                location: { pathname },
+                history,
+                requestor: { uid },
+                checkMotionForRequestorDeals
+                } = nextProps;
+        if(!newMotionItem) {
             getMotion(pathname);
+            return null;
+        } else{
+            if(!prevState.checked){
+                const { key } = newMotionItem;
+                checkMotionForRequestorDeals({ key, history, uid });
+                return { checked: true }
+            }
+            return null;
         }
-        const result = await checkMotionForRequestorDeals({
-            key,
-            history,
-            uid
-        });
-        console.log('RESULT', result);
-        this.setState(() => ({ isLoaded: true }));
+    }
+
+    componentWillUnmount() {
+        const { unsetNewMotionItem } = this.props;
+        unsetNewMotionItem();
     }
 
     render() {
-        const { isLoaded, text, money } = this.state;
-        if(!isLoaded){
+        const { text, money } = this.state;
+        const { isLoading, newMotionItem } = this.props;
+        if(!newMotionItem || isLoading){
             return (
                 <Paper>
-                    <CircularProgress color='secondary'/>
-                    <CircularProgress color='secondary'/>
-                    <CircularProgress color='secondary'/>
-                    <CircularProgress color='secondary'/>
-                    <CircularProgress color='secondary'/>
+                    <Grid
+                        container
+                        justify="space-between"
+                    >
+                        <Grid
+                            item
+                            children={
+                                <CircularProgress
+                                    color='secondary'
+                                />}
+                        />
+                        <Grid
+                            item
+                            children={
+                                <CircularProgress
+                                    color='secondary'
+                                />}
+                        />
+                        <Grid
+                            item
+                            children={
+                                <CircularProgress
+                                    color='secondary'
+                                />}
+                        />
+                        <Grid
+                            item
+                            children={
+                                <CircularProgress
+                                    color='secondary'
+                                />}
+                        />
+                        <Grid
+                            item
+                            children={
+                                <CircularProgress
+                                    color='secondary'
+                                />}
+                        />
+                    </Grid>
                 </Paper>);
         }
         const {
@@ -77,7 +134,7 @@ class Requestor extends Component {
                 <Grid item>
                     <Typography
                         children={task.name}
-                        variant="display3"
+                        variant="h3"
                         align="center"
                         gutterBottom
                     />
@@ -99,6 +156,7 @@ class Requestor extends Component {
                     <TextField
                         placeholder="Please, buy something for me"
                         name="text"
+                        type="text"
                         value={text}
                         onChange={this.handleTextChange}
                         multiline
@@ -109,17 +167,17 @@ class Requestor extends Component {
                         <FormLabel component="legend">My Bid</FormLabel>
                         <FormGroup>
                             <FormControlLabel
-                                label="UAH"
                                 control={<TextField
                                             name="money"
                                             value={money}
+                                            type="text"
                                             onChange={this.handleTextChange}
                                         />}
                             />
                         </FormGroup>
                 </Grid>
                 <Button
-                    variant="raised"
+                    variant="contained"
                     color="primary"
                     onClick={
                         this.handleSubmit
@@ -152,20 +210,25 @@ class Requestor extends Component {
             history,
             newMotionItem: {
                 operator,
-                key
+                key,
+                time: {
+                    finishTime
+                },
             },
         } = this.props;
             const newDeal = {
                 text,
-                currentBid: money,
+                currentBid: {
+                    value: money,
+                    authorStatus: REQUESTOR
+                },
                 motionReference: key,
                 requestor,
                 operator,
-                accepted: {
-                    requestor: true,
-                    operator: false,
-                    rejected: false
-                }
+                status: {
+                    accepted: false,
+                },
+                finishTime,
             };
            initDeal({ newDeal, history });
         };
@@ -176,8 +239,17 @@ const mapStateToProps = ({
     authReducer: requestor,
     motionReducer: {
         newMotionItem
+    },
+    loadingReducer: {
+        isLoading
     }
-}) => ({ requestor, newMotionItem });
-const mapDispatchToProps = dispatch => bindActionCreators({ getMotion, throwError, initDeal, checkMotionForRequestorDeals }, dispatch);
+}) => ({ requestor, newMotionItem, isLoading });
+const mapDispatchToProps = dispatch => bindActionCreators({
+    getMotion,
+    throwError,
+    initDeal,
+    checkMotionForRequestorDeals,
+    unsetNewMotionItem
+}, dispatch);
 
 export default connect(mapStateToProps, mapDispatchToProps)(Requestor);

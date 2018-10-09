@@ -48,7 +48,7 @@ const Header = ({
         </DialogActions>
       </Dialog>
       <AppBar position="static" color="default">
-        <Typography variant="display4" align="center" gutterBottom={true}>Do This For Me</Typography>
+        <Typography variant="h4" align="center" gutterBottom={true}>Do This For Me</Typography>
         {isLoading && <LinearProgress />}
         {needsAuthButton &&
         <Button

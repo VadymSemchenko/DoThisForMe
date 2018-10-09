@@ -1,8 +1,8 @@
-import { SET_MOTIONS_ARRAY, GET_NEW_MOTION_ITEM } from '../actionTypes';
+import { SET_MOTIONS_ARRAY, GET_NEW_MOTION_ITEM, UNSET_NEW_MOTION_ITEM } from '../actionTypes';
 
 export const initialMotionState = {
     motions: [],
-    newMotionItem: {}
+    newMotionItem: null
 };
 
 export default function motionReducer(state = initialMotionState, action) {
@@ -14,11 +14,15 @@ export default function motionReducer(state = initialMotionState, action) {
                 motions: payload,
             };
         case GET_NEW_MOTION_ITEM:
-            console.log('GET_MOTION_ITEM_IN_REDUCER');
             return {
                 ...state,
                 newMotionItem: payload
             };
+        case UNSET_NEW_MOTION_ITEM:
+        return {
+            ...state,
+            newMotionItem: null
+        };
         default:
             return state;
     }

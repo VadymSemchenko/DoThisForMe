@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import PropTypes from 'prop-types';
+import { array, string, displayName } from 'prop-types';
 import { IconButton, Button, Grid } from '@material-ui/core/';
 
 import PlayCircleFilledIcon from '@material-ui/icons/PlayCircleFilled';
@@ -16,10 +16,13 @@ import { HOW_IT_WORKS, MOTION_CREATE } from '../../constants/routes';
 import MotionsList from '../MotionsList/MotionsList';
 
 class Home extends Component {
+
     static propTypes = {
-        motions: PropTypes.array,
-        uid: PropTypes.string,
+        motions: array.isRequired,
+        uid: string.isRequired,
+        displayName: string.isRequired
     };
+
     render() {
         const { motions = [], uid } = this.props;
         return (

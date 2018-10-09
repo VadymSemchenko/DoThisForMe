@@ -4,25 +4,36 @@ import { TimePicker } from 'material-ui-time-picker';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import { string, func } from 'prop-types';
 
-import { MOTION_PROCESS } from '../../../constants/routes';
 import { initMotion } from '../../../store/actionCreators';
 
 let inAnHour = new Date();
 inAnHour.setHours(inAnHour.getHours() + 1);
 
 class OperatorCreate extends Component {
+
     state = {
         clockIsOpen: false,
         time: inAnHour,
         value: ''
     };
 
+    static propTypes = {
+        uid: string.isRequired,
+        displayName: string.isRequired,
+        initMotion: func.isRequired
+    };
+
     render() {
+
         const { uid, displayName } = this.props;
         const { time, value } = this.state;
-        const hours = time.getHours();
-        const minutes = time.getMinutes();
+        let hours = time.getHours();
+        let minutes = time.getMinutes();
+        hours = hours < 10 ? `0${hours}` : hours;
+        minutes = minutes < 10 ? `0${minutes}` : minutes;
+
         return (
             <Grid
             container
@@ -63,7 +74,7 @@ class OperatorCreate extends Component {
                 </Grid>
                 <Grid item>
                     <Button
-                    variant="raised"
+                    variant="contained"
                     color="secondary"
                     onClick={this.createMotion}
                     disabled={!this.state.value}
@@ -89,7 +100,7 @@ class OperatorCreate extends Component {
         this.setState((prevState) => ({ clockIsOpen: !prevState.clockIsOpen }));
     }
 
-    createMotion = async () => {
+    createMotion = () => {
         const { uid, displayName, initMotion, history } = this.props;
         const { value, time } = this.state;
         const newMotion = {

@@ -4,7 +4,7 @@ import { routeToText } from '../../helpers/routeToText';
 
 const InfoPage = ({ location: { pathname } }) => (
     <Typography
-        variant="display4"
+        variant="h4"
         align="center"
         gutterBottom={true}
         children={routeToText(pathname)}

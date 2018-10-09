@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import { string, func, array, shape } from 'prop-types';
 import ListItem from '@material-ui/core/ListItem';
 import Divider from '@material-ui/core/Divider';
 import ListItemText from '@material-ui/core/ListItemText';
@@ -12,9 +12,19 @@ import { DEALS } from '../../constants/routes';
 
 class MotionList extends Component {
   static propTypes = {
-    handleClick: PropTypes.func.isRequired,
-    motions: PropTypes.array.isRequired,
-    uid: PropTypes.string,
+    handleClick: func.isRequired,
+    motions: array.isRequired,
+    uid: string.isRequired,
+    listItem: shape({
+      key: string,
+      operator: shape({
+        displayName: string,
+        uid: string
+      }),
+      task: shape({
+        name: string
+      })
+    })
   };
 
   render() {
@@ -38,8 +48,8 @@ class MotionList extends Component {
             {isAuthor &&
             <Button
               component={Link}
-              to={`${DEALS}/${key}`}
-              variant='raised'
+              to={`${DEALS}/${key}?operator=${operatorUid}`}
+              variant='contained'
               color='primary'
               children='Manage'
             />}

@@ -7,7 +7,7 @@ const NotFound = () => (
             align="center"
             children={'Incorrect URL'}
             gutterBottom={true}
-            variant="display4"
+            variant="h4"
         />
     </Paper>
 );

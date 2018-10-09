@@ -1,8 +1,8 @@
-import { SET_DEALS_ARRAY, SET_SELECTED_DEAL } from '../actionTypes';
+import { SET_DEALS_ARRAY, GET_CURRENT_DEAL, UNSET_CURRENT_DEAL } from '../actionTypes';
 
 export const initialDealState = {
     deals: [],
-    selectedDeal: ''
+    currentDeal: null
 };
 
 export default function dealReducer(state = initialDealState, action) {
@@ -13,10 +13,15 @@ export default function dealReducer(state = initialDealState, action) {
                 ...state,
                 deals: payload,
             };
-        case SET_SELECTED_DEAL:
+        case GET_CURRENT_DEAL:
             return {
                 ...state,
-                selectedDeal: payload,
+                currentDeal: payload,
+            };
+        case UNSET_CURRENT_DEAL:
+            return {
+                ...state,
+                currentDeal: null
             };
         default:
             return state;
