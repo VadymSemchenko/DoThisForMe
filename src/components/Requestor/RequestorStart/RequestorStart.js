@@ -1,10 +1,9 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { func, object, shape, string, number, oneOfType, bool } from 'prop-types';
+import { func, string, bool } from 'prop-types';
 import { Grid, Button, Typography, TextField, FormControlLabel, FormGroup, FormLabel, CircularProgress, Paper } from '@material-ui/core';
-import moment from 'moment';
-import CountdownTimer from 'react-awesome-countdowntimer';
+import Countdown from 'react-countdown-now';
 
 import {
     getMotion,
@@ -14,15 +13,14 @@ import {
     unsetNewMotionItem
 } from '../../../store/actionCreators';
 import { newMotionInterface } from '../../../constants/interfaces';
+import { HOME } from '../../../constants/routes';
 import { REQUESTOR } from '../../../constants/userStatus';
 
 class Requestor extends Component {
 
     state = {
-        inputs: {
-            text: '',
-            money: '10'
-        },
+        text: '',
+        money: '',
         checked: false
     };
 
@@ -33,39 +31,50 @@ class Requestor extends Component {
         initDeal: func.isRequired,
         checkMotionForRequestorDeals: func.isRequired,
         unsetNewMotionItem: func.isRequired,
-        requestor: shape({
-            uid: string,
-            displayName: string
-        }).isRequired,
+        userID: string,
+        userName: string.isRequired,
         newMotionItem: newMotionInterface
     };
 
     static getDerivedStateFromProps(nextProps, prevState) {
         const {
-                getMotion,
-                newMotionItem,
-                location: { pathname },
-                history,
-                requestor: { uid },
-                checkMotionForRequestorDeals
-                } = nextProps;
-        if(!newMotionItem) {
-            getMotion(pathname);
-            return null;
-        } else{
-            if(!prevState.checked){
-                const { key } = newMotionItem;
-                checkMotionForRequestorDeals({ key, history, uid });
-                return { checked: true }
-            }
-            return null;
+            checkMotionForRequestorDeals,
+            history,
+            userID,
+            newMotionItem
+        } = nextProps;
+        const { checked } = prevState;
+        if(!checked && !!newMotionItem){
+            const { key } = newMotionItem;
+            checkMotionForRequestorDeals({ key, history, userID });
+            return { checked: true }
         }
-    }
+        return null;
+    };
 
     componentWillUnmount() {
         const { unsetNewMotionItem } = this.props;
         unsetNewMotionItem();
-    }
+        clearInterval(this.checkCountdown);
+    };
+
+    componentDidMount() {
+        const {
+            getMotion,
+            newMotionItem,
+            location: { pathname }
+            } = this.props;
+            if(!newMotionItem) {
+                getMotion(pathname);
+            }
+    };
+
+    componentDidUpdate() {
+        const { checked } = this.state;
+        if (!checked) {
+            setInterval(this.checkCountdown, 1000);
+        }
+    };
 
     render() {
         const { text, money } = this.state;
@@ -116,14 +125,12 @@ class Requestor extends Component {
                 </Paper>);
         }
         const {
-            requestor,
             newMotionItem: {
-                operator,
-                task,
-                time: {
-                    finishTime
-                }
-            },
+                operatorName,
+                operatorID,
+                motionName,
+                deadline
+            }
         } = this.props;
         return (
             <Grid
@@ -133,24 +140,22 @@ class Requestor extends Component {
             >
                 <Grid item>
                     <Typography
-                        children={task.name}
-                        variant="h3"
+                        children={motionName}
+                        variant="display3"
                         align="center"
                         gutterBottom
                     />
                 </Grid>
                 <Grid item>
                     <Typography
-                        children={operator.displayName}
+                        children={operatorName}
                         variant="display2"
                         align="center"
                         gutterBottom
                     />
                 </Grid>
                 <Grid item>
-                    <CountdownTimer
-                        endDate={moment(finishTime)}
-                    />
+                    <Countdown date={deadline} />
                 </Grid>
                 <Grid item>
                     <TextField
@@ -183,67 +188,73 @@ class Requestor extends Component {
                         this.handleSubmit
                     }
                     children="Submit"
+                    disabled={!money || !text}
                 />
             </Grid>
         );
     }
 
     handleTextChange = ({ target: { name, value } }) => {
-        this.setState(({ inputs }) => ({
-            inputs: {
-                ...inputs,
-                [name]: value
-            }
-        }));
+        this.setState(() => ({ [name]: value }));
     };
 
     handleSubmit = () => {
+        const { text, money } = this.state;
         const {
-            inputs: {
-                text,
-                money
-            }
-        } = this.state;
-        const {
-            requestor,
+            userID,
+            userName,
             initDeal,
             history,
             newMotionItem: {
-                operator,
+                operatorName,
+                operatorID,
                 key,
-                time: {
-                    finishTime
-                },
-            },
+                deadline,
+                motionName
+            }
         } = this.props;
-            const newDeal = {
-                text,
-                currentBid: {
-                    value: money,
-                    authorStatus: REQUESTOR
-                },
-                motionReference: key,
-                requestor,
-                operator,
-                status: {
-                    accepted: false,
-                },
-                finishTime,
-            };
-           initDeal({ newDeal, history });
+        const newDeal = {
+            requestorID: userID,
+            requestorName: userName,
+            requestorBid: money,
+            requestorTask: text,
+            motionReference: key,
+            operatorName,
+            operatorID,
+            operatorBid: '',
+            accepted: false,
+            deadline,
+            motionName
         };
+        initDeal({ newDeal, history });
+    };
+
+    checkCountdown = () => {
+        const { throwError, newMotionItem, history } = this.props;
+        if (!!newMotionItem) {
+            const { deadline } = newMotionItem;
+            if (Date.now() >= deadline) {
+                throwError('This motion is obsolete!');
+                history.replace(HOME);
+            }
+        }
+    }
 
 }
 
 const mapStateToProps = ({
-    authReducer: requestor,
+    authReducer: {
+        userID,
+        userName
+    },
     motionReducer: {
         newMotionItem
     },
     loadingReducer: {
         isLoading
     }
-}) => ({ requestor, newMotionItem, isLoading });
+}) => ({ userID, userName, newMotionItem, isLoading });
+
 const mapDispatchToProps = dispatch => bindActionCreators({
     getMotion,
     throwError,

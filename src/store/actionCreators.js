@@ -1,22 +1,16 @@
 import * as actionTypes from './actionTypes';
 import { database, auth, googleAuthProvider, timestamp } from '../firebase';
-import { MOTIONS, DEALS, HOME } from '../constants/routes';
+import { HOME, OPERATOR, REQUESTOR } from '../constants/routes';
 
 const motionsRef = database.ref('motions');
 const dealsRef = database.ref('deals');
 
 export const initMotion = ({ newMotion, history }) => (dispatch) => {
   dispatch({ type: actionTypes.START_LOADING });
-  return motionsRef.push({
-    ...newMotion,
-    time: {
-      ...newMotion.time,
-      creationTime: timestamp
-    }
-  })
+  return motionsRef.push(newMotion)
     .then(({ key }) => {
-      const { operator: { uid } } = newMotion;
-      history.push(`${DEALS}/${key}?operator=${uid}`);
+      const { operatorID } = newMotion;
+      history.push(`${OPERATOR}?motion=${key}`);
       dispatch({ type: actionTypes.FINISH_LOADING });
     })
     .catch(({ message }) => {
@@ -36,11 +30,7 @@ export const attemptSignIn = () => (dispatch) => {
 
 export const attemptSignOut = () => {
     auth.signOut();
-    return { type: actionTypes.START_LOADING };
-};
-
-export const deleteError = () => {
-  return { type: actionTypes.DELETE_ERROR };
+    return { type: actionTypes.SIGN_OUT };
 };
 
 export const startListeningForMotionsListChanges = () => (dispatch) => {
@@ -63,11 +53,14 @@ export const startListeningForMotionsListChanges = () => (dispatch) => {
 export const startListeningToAuthChanges = () => (dispatch) => {
   auth.onAuthStateChanged((user) => {
     if (user) {
-      const { uid, displayName, photoUrl } = user;
+      const { uid, displayName } = user;
       dispatch({ type: actionTypes.FINISH_LOADING });
       dispatch({
         type: actionTypes.SIGN_IN,
-        payload: { uid, displayName, photoUrl }
+        payload: {
+          userID: uid,
+          userName: displayName
+        }
       });
     } else {
       dispatch({ type: actionTypes.FINISH_LOADING });
@@ -81,7 +74,7 @@ export const removeMotion = (key) => {
 };
 
 export const joinMotion = ({ key, history, uid } ) => dispatch => {
-  history.push(`${MOTIONS}/${key}`);
+  history.push(`${REQUESTOR}?motion=${key}`);
 };
 
 export const getMotion = (pathname) => dispatch => {
@@ -113,10 +106,10 @@ export const initDeal = ({ newDeal, history }) => (dispatch) => {
   dispatch({
     type: actionTypes.START_LOADING
   });
-  const { motionReference, requestor } = newDeal;
-  dealsRef.child(`/${motionReference}/${requestor.uid}`).set({ ...newDeal, timestamp })
+  const { motionReference, requestorID } = newDeal;
+  dealsRef.child(`/${motionReference}/${requestorID}`).set({ ...newDeal, timestamp })
     .then(() => {
-        history.push(`${DEALS}/${motionReference}/${requestor.uid}`);
+        history.push(`${REQUESTOR}?motion=${motionReference}&requestor=${requestorID}`);
         dispatch({ type: actionTypes.FINISH_LOADING });
       })
     .catch(({ message }) => {
@@ -125,16 +118,16 @@ export const initDeal = ({ newDeal, history }) => (dispatch) => {
     });
 };
 
-export const checkMotionForRequestorDeals = ({ key, history, uid }) => (dispatch) => {
+export const checkMotionForRequestorDeals = ({ key, history, userID }) => (dispatch) => {
   dispatch({ type: actionTypes.START_LOADING });
-  const result = dealsRef.child(`${key}/${uid}`).once('value')
+  const result = dealsRef.child(`${key}/${userID}`).once('value')
     .then(snapshot => {
       if(snapshot.exists()){
         const snapVal = snapshot.val();
-        const { requestor } = snapVal;
-        const isRequestor = uid === requestor.uid;
+        const { requestorID } = snapVal;
+        const isRequestor = userID === requestorID;
         if(isRequestor){
-          history.push(`${DEALS}/${key}/${uid}`);
+          history.push(`${REQUESTOR}?motion=${key}&requestor=${userID}`);
           dispatch({ type: actionTypes.FINISH_LOADING });
           return true;
         }
@@ -265,7 +258,7 @@ export const deleteDeal = (pathname) => dispatch => {
       dispatch({
         type: actionTypes.FINISH_LOADING
       });
-    });
+    })
 };
 
 export const acceptBid = ({ pathname, userStatus }) => dispatch => {
@@ -276,3 +269,12 @@ export const acceptBid = ({ pathname, userStatus }) => dispatch => {
   });
   dispatch({ type: actionTypes.FINISH_LOADING });
 };
+
+export const unsetDeals = () => ({
+  type: actionTypes.SET_DEALS_ARRAY,
+  payload: []
+});
+
+export const deleteError = () => {
+  return { type: actionTypes.DELETE_ERROR };
+}

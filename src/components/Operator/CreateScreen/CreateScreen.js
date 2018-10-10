@@ -1,12 +1,11 @@
 import React, { Component } from 'react';
 import { Button, Grid, TextField } from '@material-ui/core';
 import { TimePicker } from 'material-ui-time-picker';
-import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { string, func } from 'prop-types';
 
-import { initMotion } from '../../../store/actionCreators';
+import { initMotion, throwError } from '../../../store/actionCreators';
 
 let inAnHour = new Date();
 inAnHour.setHours(inAnHour.getHours() + 1);
@@ -20,14 +19,12 @@ class OperatorCreate extends Component {
     };
 
     static propTypes = {
-        uid: string.isRequired,
-        displayName: string.isRequired,
+        userID: string.isRequired,
+        userName: string.isRequired,
         initMotion: func.isRequired
     };
 
     render() {
-
-        const { uid, displayName } = this.props;
         const { time, value } = this.state;
         let hours = time.getHours();
         let minutes = time.getMinutes();
@@ -40,12 +37,6 @@ class OperatorCreate extends Component {
             direction="column"
             alignItems="center"
             >
-                <Grid item>
-                    <TextField
-                    value={displayName}
-                    disabled
-                    />
-                </Grid>
                 <Grid item>
                     <TextField
                     placeholder="What I can do for people"
@@ -93,7 +84,12 @@ class OperatorCreate extends Component {
     }
 
     handleTimeChange = (time) => {
-        this.setState(() => ({ time }));
+        const { throwError } = this.props;
+        if (time.getTime() <= Date.now()){
+            throwError('Have you invented a time machine?');
+        } else {
+            this.setState(() => ({ time }));
+        }
     };
 
     toggleClock = () => {
@@ -101,25 +97,19 @@ class OperatorCreate extends Component {
     }
 
     createMotion = () => {
-        const { uid, displayName, initMotion, history } = this.props;
+        const { userName, userID, initMotion, history } = this.props;
         const { value, time } = this.state;
         const newMotion = {
-            operator: {
-                displayName,
-                uid
-            },
-            task: {
-                name: value
-            },
-            time: {
-                finishTime: time.getTime()
-            }
+            operatorName: userName,
+            operatorID: userID,
+            motionName: value,
+            deadline: time.getTime()
         };
         initMotion({ newMotion, history });
     };
 }
 
-const mapStateToProps = ({ authReducer: { displayName, uid } }) => ({ displayName, uid });
-const mapDispatchToProps = dispatch => bindActionCreators({ initMotion }, dispatch);
+const mapStateToProps = ({ authReducer: { userName, userID } }) => ({ userName, userID });
+const mapDispatchToProps = dispatch => bindActionCreators({ initMotion, throwError }, dispatch);
 
 export default connect(mapStateToProps, mapDispatchToProps)(OperatorCreate);

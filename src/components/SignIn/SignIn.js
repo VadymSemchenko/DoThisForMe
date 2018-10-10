@@ -1,5 +1,5 @@
 import React from 'react';
-import { Grid, Typography, Button } from '@material-ui/core';
+import { Grid } from '@material-ui/core';
 import StyledFirebaseAuth from 'react-firebaseui/StyledFirebaseAuth';
 
 import { uiConfig, auth } from '../../firebase';

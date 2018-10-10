@@ -1,10 +1,8 @@
-import React, { Fragment } from 'react';
-import { string, number, func, bool } from 'prop-types';
-import { Typography, TextField, InputAdornment, Grid, Button } from '@material-ui/core';
+import React from 'react';
+import { string, func, bool } from 'prop-types';
+import { Grid, Button } from '@material-ui/core';
 
 const WaitScreen = ({
-    text,
-    currentBidValue,
     callRebid,
     onAccept,
     onReject,
@@ -21,7 +19,7 @@ const WaitScreen = ({
             <Grid
                 item
                 container
-                justify="space-between"
+                justify="space-around"
             >
                 <Grid
                     item
@@ -32,14 +30,18 @@ const WaitScreen = ({
                         onClick={callRebid}
                         color="primary"
                     />
-                    {!isAuthor &&
-                        <Button
-                            variant="contained"
-                            children="Accept"
-                            onClick={onAccept}
-                            color="primary"
-                        />
-                    }
+                </Grid>
+                {!isAuthor &&
+                <Grid item>
+                    <Button
+                        variant="contained"
+                        children="Accept"
+                        onClick={onAccept}
+                        color="primary"
+                    />
+                </Grid>
+                }
+                <Grid item>
                     <Button
                         variant="contained"
                         children={negativeButtonText}

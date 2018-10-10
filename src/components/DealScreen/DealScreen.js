@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Typography, Grid, CircularProgress } from '@material-ui/core';
-import { func, string, shape, bool, number } from 'prop-types';
+import { func, string, shape, bool } from 'prop-types';
 import { bindActionCreators } from 'redux';
 import { Redirect } from 'react-router-dom';
 import moment from 'moment';
@@ -87,7 +87,7 @@ class DealScreen extends Component {
     }
 
     render() {
-        const { currentDeal, text, uid, location: { pathname }, throwError } = this.props;
+        const { currentDeal, location: { pathname }, throwError } = this.props;
         const { userStatus, rebidIsOpen, bidInputValue } = this.state;
         if(!currentDeal){
             return (
@@ -116,13 +116,12 @@ class DealScreen extends Component {
                 throwError('This deal is oblosete!');
             }
             const isAuthor = userStatus === authorStatus;
-            console.log('IS AUTHOR', isAuthor);
             if(userStatus === STRANGER){
                 throwError('You are neither operator nor requestor!');
                 return <Redirect to={HOME}/>;
             };
             if(accepted) {
-                const message = `The bid has been accepted: ${text} for ${value}UAH`;
+                const message = `The bid has been accepted: ${text} for ${value}`;
                 throwError(message);
                 return <Redirect to={HOME}/>;
             }
@@ -142,16 +141,9 @@ class DealScreen extends Component {
                     <Grid item>
                         <Typography
                             variant="h4"
-                            children="DealScreen"
-                            align="center"
-                        />
-                    </Grid>
-                    <Grid item>
-                        <Typography
-                            variant="h4"
                             align="center"
                         >
-                            {`${text} for ${value}UAH by ${authorStatus}`}
+                            {`${text} for ${value} by ${authorStatus}`}
                         </Typography>
                     </Grid>
                     <Grid item>

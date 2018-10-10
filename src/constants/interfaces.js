@@ -1,4 +1,4 @@
-import { shape, func, string, bool, number } from 'prop-types';
+import { shape, string, bool, number } from 'prop-types';
 
 export const newMotionInterface = shape({
     operator: shape({
@@ -11,5 +11,24 @@ export const newMotionInterface = shape({
     time: shape({
         finishTime: number,
         creationTime: number
+    })
+});
+
+export const dealItemInterface = shape({
+    requestor: shape({
+        displayName: string,
+        uid: string
+    }),
+    operator: shape({
+        displayName: string,
+        uid: string
+    }),
+    text: string,
+    currentBid: shape({
+        value: string,
+        authorStatus: string
+    }),
+    status: shape({
+        accepted: bool
     })
 });

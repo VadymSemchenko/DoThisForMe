@@ -1,72 +1,86 @@
-import React, { Component } from 'react';
+import React, { Fragment } from 'react';
 import { string, func, array, shape } from 'prop-types';
 import ListItem from '@material-ui/core/ListItem';
 import Divider from '@material-ui/core/Divider';
-import ListItemText from '@material-ui/core/ListItemText';
 import List from '@material-ui/core/List';
 import Button from '@material-ui/core/Button';
-import { connect } from 'react-redux';
+import Chip from '@material-ui/core/Chip';
+import Countdown from 'react-countdown-now';
+import SnackbarContent from '@material-ui/core/SnackbarContent';
 import { Link } from 'react-router-dom';
 
-import { DEALS } from '../../constants/routes';
+import { DEALS, REQUESTOR, OPERATOR } from '../../constants/routes';
 
-class MotionList extends Component {
-  static propTypes = {
-    handleClick: func.isRequired,
-    motions: array.isRequired,
-    uid: string.isRequired,
-    listItem: shape({
-      key: string,
-      operator: shape({
-        displayName: string,
-        uid: string
-      }),
-      task: shape({
-        name: string
-      })
-    })
-  };
-
-  render() {
-    const { motions } = this.props;
-    return (
-      <List>{motions.map(this.renderListItem)}</List>
-    );
-  }
-
-  renderListItem = (listItem) => {
-    const { key, operator: { displayName, uid: operatorUid }, task: { name } } = listItem;
-    const { uid: authorisationUid } = this.props;
-    const isAuthor = (operatorUid === authorisationUid);
-    const btnText = isAuthor ? 'DELETE' : 'JOIN';
-    const btnColor = isAuthor ? 'secondary' : 'primary';
-    return (
-      <List key={key}>
-        <ListItem>
-          <ListItemText>
-            <span>{`${displayName}: ${name}`}</span>
-            {isAuthor &&
-            <Button
-              component={Link}
-              to={`${DEALS}/${key}?operator=${operatorUid}`}
-              variant='contained'
-              color='primary'
-              children='Manage'
-            />}
-            {authorisationUid &&
-            <Button
-              color={btnColor}
-              onClick={() => {this.props.handleClick({ condition: isAuthor, key })}}
-              children={btnText}
-            />}
-          </ListItemText>
-        </ListItem>
-        <Divider/>
-      </List>
-    );
-  }
+const MotionList = ({ motions, userID, removeMotion }) => {
+  return (
+    <List>{motions.map(({
+            key,
+            operatorName,
+            operatorID,
+            motionName,
+            deadline
+          }) => {
+            const isAuthor = (operatorID === userID);
+            console.log('IS_AUTHOR', isAuthor);
+            const isObsolete = Date.now() >= deadline;
+            const chipText = isObsolete ? 'OBSOLETE' : <Countdown date={deadline} />;
+            const chipColor = isObsolete ?  'secondary' : 'primary';
+            return (
+              <List key={key}>
+                <ListItem>
+                  <Chip
+                    label={chipText}
+                    color={chipColor}
+                  />
+                  <SnackbarContent
+                    message={`${operatorName}: ${motionName}`}
+                  />
+                  {isAuthor &&
+                    <Fragment>
+                      <Button
+                        component={Link}
+                        to={`${OPERATOR}/?operator=${userID}&motion=${key}`}
+                        variant='contained'
+                        color='primary'
+                        children='MANAGE'
+                      />
+                      <Button
+                        variant="contained"
+                        color="secondary"
+                        onClick={() => {removeMotion(key)}}
+                        children="REMOVE"
+                        disabled={isObsolete}
+                      />
+                    </Fragment>
+                    }
+                    {!isAuthor &&
+                      <Button
+                        component={Link}
+                        to={`${REQUESTOR}/?requestor=${userID}&operator=${operatorID}&motion=${key}`}
+                        variant='contained'
+                        color='primary'
+                        children='JOIN'
+                      />
+                    }
+                </ListItem>
+                <Divider/>
+              </List>
+            );
+          })}
+    </List>
+  );
 }
 
-const mapStateToProps = ({ authReducer: { uid } }) => ({ uid });
+MotionList.propTypes = {
+  removeMotion: func.isRequired,
+  motions: array.isRequired,
+  userID: string.isRequired,
+  listItem: shape({
+    key: string,
+    operatorName: string,
+    operatorID: string,
+    motionName: string
+    }).isRequired
+  }.isRequired;
 
-export default connect(mapStateToProps)(MotionList);
+export default MotionList;

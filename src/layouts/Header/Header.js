@@ -5,7 +5,6 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
-import DialogTitle from '@material-ui/core/DialogTitle';
 import { connect } from "react-redux";
 import { bindActionCreators } from 'redux';
 import { withRouter } from 'react-router-dom';
@@ -16,7 +15,7 @@ import { SIGN_IN } from '../../constants/routes';
 
 const Header = ({
   isLoading,
-  uid,
+  userID,
   attemptSignIn,
   attemptSignOut,
   error,
@@ -25,7 +24,7 @@ const Header = ({
     pathname
   }
 }) => {
-  const isAuth = !!uid;
+  const isAuth = !!userID;
   const btnColor = isAuth ? 'secondary' : 'primary';
   const btnTitle = isAuth ? 'Sign Out' : 'Sign In';
   const btnOnClick = isAuth ? attemptSignOut : attemptSignIn;
@@ -34,7 +33,6 @@ const Header = ({
   return (
     <Fragment>
       <Dialog open={isError} onClose={deleteError}>
-        <DialogTitle>ERROR!</DialogTitle>
         <DialogContent>
           <DialogContentText>{error}</DialogContentText>
         </DialogContent>
@@ -48,7 +46,7 @@ const Header = ({
         </DialogActions>
       </Dialog>
       <AppBar position="static" color="default">
-        <Typography variant="h4" align="center" gutterBottom={true}>Do This For Me</Typography>
+        <Typography variant="display3" align="center" gutterBottom={true}>Do This For Me</Typography>
         {isLoading && <LinearProgress />}
         {needsAuthButton &&
         <Button
@@ -67,11 +65,11 @@ const Header = ({
   );
 };
 
-const mapStateToProps = ({ loadingReducer: { isLoading }, authReducer: { uid }, errorReducer: { error } }) => ({ isLoading, uid, error });
+const mapStateToProps = ({ loadingReducer: { isLoading }, authReducer: { userID }, errorReducer: { error } }) => ({ isLoading, userID, error });
 const mapDispatchToProps = dispatch => bindActionCreators({ attemptSignIn, attemptSignOut, deleteError }, dispatch);
 
 Header.propTypes = {
-  uid: string.isRequired,
+  userID: string.isRequired,
   isLoading: bool.isRequired,
   attemptSignIn: func.isRequired,
   attemptSignOut: func.isRequired

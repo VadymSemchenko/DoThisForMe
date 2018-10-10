@@ -1,8 +1,7 @@
 import React, { Component, Fragment } from 'react';
-import { array, string, displayName } from 'prop-types';
-import { IconButton, Button, Grid } from '@material-ui/core/';
-
-import PlayCircleFilledIcon from '@material-ui/icons/PlayCircleFilled';
+import { array, string } from 'prop-types';
+import { IconButton, Button, Grid, Card } from '@material-ui/core/';
+import { PlayCircleFilled } from '@material-ui/icons/';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -12,19 +11,26 @@ import {attemptSignIn,
     removeMotion,
     joinMotion
 } from '../../store/actionCreators';
-import { HOW_IT_WORKS, MOTION_CREATE } from '../../constants/routes';
+import { OPERATOR_CREATE } from '../../constants/routes';
 import MotionsList from '../MotionsList/MotionsList';
 
 class Home extends Component {
 
+    state = {
+        iFrameIsOpen: false
+    }
+
     static propTypes = {
         motions: array.isRequired,
-        uid: string.isRequired,
-        displayName: string.isRequired
+        userID: string.isRequired,
+        userName: string.isRequired
     };
 
     render() {
-        const { motions = [], uid } = this.props;
+        const { motions = [], userID } = this.props;
+        const { iFrameIsOpen } = this.state;
+        const btnText = iFrameIsOpen ? 'CLOSE VIDEO' : 'HOW IT WORKS?';
+        const btnColor = iFrameIsOpen ? 'secondary' : 'primary';
         return (
             <main>
                 <Grid
@@ -32,13 +38,31 @@ class Home extends Component {
                     direction="column"
                     alignItems="center"
                 >
+                   {iFrameIsOpen &&
+                   <Card>
+                        <iframe
+                            width="560"
+                            height="315"
+                            src="https://www.youtube.com/embed/MjJtGxG3zrc"
+                            frameBorder="0"
+                            allow="autoplay; encrypted-media"
+                            title="How It Works"
+                        />
+                    </Card>}
+                    {!iFrameIsOpen &&
                     <Grid item={true}>
-                        <IconButton component={Link} to={HOW_IT_WORKS}>
-                            <PlayCircleFilledIcon color="primary" />
-                        </IconButton>
-                    </Grid>
+                        <IconButton
+                            children={<PlayCircleFilled color="primary" />}
+                            onClick={this.toggleIFrame}
+                        />
+                    </Grid>}
                     <Grid item={true}>
-                        <Link to={HOW_IT_WORKS}>How DoThis4Me Works?</Link>
+                        <Button
+                            children={btnText}
+                            variant="contained"
+                            color={btnColor}
+                            onClick={this.toggleIFrame}
+                        />
                     </Grid>
                     <Grid item={true}>
                         <Grid
@@ -51,18 +75,18 @@ class Home extends Component {
                         <MotionsList
                             handleClick={this.handleClick}
                             motions={motions}
-                            uid={uid}
+                            userID={userID}
+                            removeMotion={removeMotion}
                         />
                     </Grid>
-                    {uid &&
+                    {userID &&
                         <Fragment>
                             <div>or</div>
                             <Button
                                 children={'I mote!'}
                                 color='secondary'
-                                disabled={!uid}
                                 component={Link}
-                                to={MOTION_CREATE}
+                                to={OPERATOR_CREATE}
                             />
                         </Fragment>
                     }
@@ -71,14 +95,9 @@ class Home extends Component {
         );
     }
 
-    handleClick = ({ condition, key }) => {
-        const { joinMotion, history, uid } = this.props;
-        if(condition){
-            removeMotion(key);
-         } else{
-            joinMotion({ key, history, uid });
-        }
-    };
+    toggleIFrame = () => {
+        this.setState(({ iFrameIsOpen }) => ({ iFrameIsOpen: !iFrameIsOpen }))
+    }
 
 }
 
@@ -87,10 +106,10 @@ const mapStateToProps = ({
         motions,
     },
     authReducer: {
-        uid,
-        displayName,
+        userID,
+        userName,
     },
-}) => ({ motions, uid, displayName });
+}) => ({ motions, userID, userName });
 
 const mapDispatchToProps = dispatch => bindActionCreators({ attemptSignIn, attemptSignOut, joinMotion }, dispatch);
 

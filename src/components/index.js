@@ -1,9 +1,10 @@
 export { default as Home } from './Home/Home';
-export { default as OperatorCreate } from './Operator/Create/Create';
-export { default as MotionScreen } from './Operator/MotionScreen/MotionScreen';
+export { default as OperatorCreate } from './Operator/CreateScreen/CreateScreen';
+export { default as ManageScreen } from './Operator/ManageScreen/ManageScreen';
 export { default as MotionsList } from './MotionsList/MotionsList';
-export { default as RequestorStart } from './Requestor/RequestorStart/RequestorStart';
+export { default as Requestor } from './Requestor/RequestorStart/RequestorStart';
 export { default as SignIn } from './SignIn/SignIn';
 export { default as DealScreen } from './DealScreen/DealScreen';
 export { default as BidScreen } from './BidScreen/BidScreen';
 export { default as WaitScreen } from './WaitScreen/WaitScreen';
+export { default as DealItem } from './DealItem/DealItem';

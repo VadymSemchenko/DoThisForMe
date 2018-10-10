@@ -1,9 +1,8 @@
 import React, { Fragment } from 'react';
-import { string, number, func } from 'prop-types';
-import { Typography, TextField, InputAdornment, Button } from '@material-ui/core';
+import { string, func } from 'prop-types';
+import { TextField, Button } from '@material-ui/core';
 
 const BidScreen = (props) => {
-    console.log('PROPS', props);
     const {
         onBid,
         handleBidChange,
@@ -11,10 +10,6 @@ const BidScreen = (props) => {
     } = props;
     return (
         <Fragment>
-            <Typography
-                variant="h4"
-                children="this is BidScreen"
-            />
             <TextField
                 type="text"
                 value={bidInputValue}
