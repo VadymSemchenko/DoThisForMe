@@ -3,11 +3,12 @@ import { Grid, Typography } from '@material-ui/core';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { Redirect } from 'react-router-dom';
-import { func, array } from 'prop-types';
+import { func, array, string } from 'prop-types';
 import queryString from 'query-string';
 
 import {
-    listenForDeals,
+    startListeningForDeals,
+    stopListeningForDeals,
     throwError,
     getMotion,
     unsetNewMotionItem,
@@ -23,33 +24,48 @@ import { DealItem } from '../..';
 class MotionScreen extends Component {
 
     state = {
-        selectedDeal: ''
+        selectedDeal: '',
+        motionID: ''
     };
 
     static propTypes = {
         deals: array.isRequired,
-        listenForDeals: func.isRequired,
+        startListeningForDeals: func.isRequired,
+        stopListeningForDeals: func.isRequired,
         throwError: func.isRequired,
         getMotion: func.isRequired,
         unsetNewMotionItem: func.isRequired,
-        newMotionItem: newMotionInterface
+        newMotionItem: newMotionInterface,
+        userID: string.isRequired
     };
 
-    componentDidMount() {
-        const { listenForDeals, location: { pathname } } = this.props;
-        listenForDeals(pathname);
+    static getDerivedStateFromProps(nextProps, prevState) {
+        const { motionID } = prevState;
+        if(!motionID) {
+            const { location: { search } } = nextProps;
+            const { motionID } = queryString.parse(search);
+            return { motionID };
+        }
+        return null;
+    };
+
+        componentDidMount() {
+        const { startListeningForDeals } = this.props;
+        const { motionID } = this.state;
+        startListeningForDeals(motionID);
     };
 
     componentWillUnmount() {
-        const { listenForDeals, unsetNewMotionItem } = this.props;
-        listenForDeals(null);
+        const { unsetNewMotionItem } = this.props;
+        const { motionID } = this.state;
+        stopListeningForDeals(motionID);
         unsetNewMotionItem();
         unsetDeals();
     };
 
     render() {
         const {
-            authUid,
+            userID,
             deals,
             location: {
                 search,
@@ -57,17 +73,16 @@ class MotionScreen extends Component {
             },
             deleteDeal,
             acceptBid,
-            setBid
+            setBid,
+            throwError
         } = this.props;
         const noDeals = deals.length === 0;
-        const { operator } = queryString.parse(search);
+        const { motionID, operatorID } = queryString.parse(search);
         const { selectedDeal } = this.state;
-            if(authUid !== operator) {
-                throwError('You are not allowed to manage this motion!');
-                return (
-                    <Redirect to={HOME} />
-                )   ;
-            }
+        if(userID !== operatorID) {
+            throwError('You are not allowed to manage this motion!');
+            return <Redirect to={HOME}/>
+        }
         return (
             <Grid
             container
@@ -84,24 +99,24 @@ class MotionScreen extends Component {
                 }
                 {deals.map(item =>
                     <DealItem
-                        key={item.requestor.uid}
+                        key={item.requestorID}
                         item={item}
                         selectedDeal={selectedDeal}
-                        authUid={authUid}
+                        userID={userID}
                         pathname={pathname}
                         setBid={setBid}
                         deleteDeal={deleteDeal}
                         acceptBid={acceptBid}
-                        handleDealSelect={() => this.handleDealSelect(item.requestor.uid)}
+                        handleDealSelect={() => this.handleDealSelect(item.requestorID)}
                         handleDeselect={() => this.handleDealSelect('')}
                     />)}
             </Grid>
         );
     };
 
-    handleDealSelect = (uid) => {
+    handleDealSelect = (id) => {
         this.setState(() => ({
-            selectedDeal: uid
+            selectedDeal: id
         }))
     };
 
@@ -112,11 +127,11 @@ const mapStateToProps = ({
         deals
     },
     authReducer: {
-        uid
+        userID
     }
-}) => ({ deals, authUid: uid });
+}) => ({ deals, userID });
 const mapDispatchToProps = (dispatch) => bindActionCreators({
-    listenForDeals,
+    startListeningForDeals,
     unsetNewMotionItem,
     throwError,
     getMotion,

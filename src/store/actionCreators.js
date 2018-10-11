@@ -1,6 +1,7 @@
 import * as actionTypes from './actionTypes';
 import { database, auth, googleAuthProvider, timestamp } from '../firebase';
 import { HOME, OPERATOR, REQUESTOR } from '../constants/routes';
+import { MOTIONS, DEALS } from '../constants/dbRoutes';
 
 const motionsRef = database.ref('motions');
 const dealsRef = database.ref('deals');
@@ -10,7 +11,7 @@ export const initMotion = ({ newMotion, history }) => (dispatch) => {
   return motionsRef.push(newMotion)
     .then(({ key }) => {
       const { operatorID } = newMotion;
-      history.push(`${OPERATOR}?motion=${key}`);
+      history.push(`${OPERATOR}?motionID=${key}`);
       dispatch({ type: actionTypes.FINISH_LOADING });
     })
     .catch(({ message }) => {
@@ -74,13 +75,12 @@ export const removeMotion = (key) => {
 };
 
 export const joinMotion = ({ key, history, uid } ) => dispatch => {
-  history.push(`${REQUESTOR}?motion=${key}`);
+  history.push(`${REQUESTOR}?motionID=${key}`);
 };
 
-export const getMotion = (pathname) => dispatch => {
+export const getMotion = (motionID) => dispatch => {
   dispatch({ type: actionTypes.START_LOADING });
-  const urlRef = database.refFromURL(`${process.env.REACT_APP_DB_URL}/${pathname}`);
-  urlRef.once('value')
+  motionsRef.child(motionID).once('value')
     .then((snapshot) => {
       const { key } = snapshot;
       dispatch({ type: actionTypes.GET_NEW_MOTION_ITEM, payload:{ ...snapshot.val(), key }});
@@ -109,7 +109,7 @@ export const initDeal = ({ newDeal, history }) => (dispatch) => {
   const { motionReference, requestorID } = newDeal;
   dealsRef.child(`/${motionReference}/${requestorID}`).set({ ...newDeal, timestamp })
     .then(() => {
-        history.push(`${REQUESTOR}?motion=${motionReference}&requestor=${requestorID}`);
+        history.push(`${REQUESTOR}?motionID=${motionReference}&requestorID=${requestorID}`);
         dispatch({ type: actionTypes.FINISH_LOADING });
       })
     .catch(({ message }) => {
@@ -127,7 +127,7 @@ export const checkMotionForRequestorDeals = ({ key, history, userID }) => (dispa
         const { requestorID } = snapVal;
         const isRequestor = userID === requestorID;
         if(isRequestor){
-          history.push(`${REQUESTOR}?motion=${key}&requestor=${userID}`);
+          history.push(`${REQUESTOR}?motionID=${key}&requestorID=${userID}`);
           dispatch({ type: actionTypes.FINISH_LOADING });
           return true;
         }
@@ -177,23 +177,28 @@ export const getDeal = ({ pathname, history }) => dispatch => {
     })
 }
 
-export const listenForDeals = (pathname) => dispatch => {
-  const urlRef = database.refFromURL(`${process.env.REACT_APP_DB_URL}/${pathname}`);
-  if(pathname){
-    urlRef.on('value', (snapshot) => {
-      const snapVal = snapshot.val();
-      const deals = [];
-      for (let key in snapVal){
-        deals.push(snapVal[key]);
-      }
-      dispatch({
-        type: actionTypes.SET_DEALS_ARRAY,
-        payload: deals
-      });
-    })
-  } else{
-    urlRef.off('value');
-  }
+export const startListeningForDeals = (motionID = '') => dispatch => {
+    if(!!motionID) {
+      dealsRef.child(motionID).on('value', (snapshot) => {
+        if(snapshot.exists()) {
+          const snapVal = snapshot.val();
+          const deals = [];
+          for (let key in snapVal){
+            deals.push(snapVal[key]);
+          }
+          dispatch({
+            type: actionTypes.SET_DEALS_ARRAY,
+            payload: deals
+          });
+        };
+      })
+    } else {
+      throwError('Select a motion!');
+    }
+};
+
+export const stopListeningForDeals = (motionID) => {
+  dealsRef.child(motionID).off('value')
 };
 
 export const unsetNewMotionItem = () => ({

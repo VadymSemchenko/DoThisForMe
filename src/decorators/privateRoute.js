@@ -16,11 +16,29 @@ const PrivateRoute = (props) => {
     if(redirectRoute === SIGN_IN){
       message = 'You have to be authorised to view this page!';
       finalRoute = `${redirectRoute}?from=${pathname}`;
+      const query = queryString.parse(search);
+      for (let key in query){
+        if(key !== 'from') {
+          finalRoute += `&${key}=${query[key]}`
+        };
+      }
     } else if(pathname === SIGN_IN && !search){
       message = 'You have already signed in!';
       finalRoute = HOME;
     } else if(pathname === SIGN_IN && search && search.includes('from=')){
-      finalRoute = queryString.parse(search).from;
+      console
+      finalRoute = `${queryString.parse(search).from}?`;
+      let counter = 0;
+      const query = queryString.parse(search);
+      for (let key in query) {
+        if(key !== 'from') {
+          if(counter !== 0) {
+            finalRoute += '&';
+          }
+          finalRoute += `${key}=${query[key]}`;
+          counter++;
+        };
+      };
     }
     if(message){
     throwError(message);

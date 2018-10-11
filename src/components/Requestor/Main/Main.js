@@ -4,6 +4,10 @@ import { bindActionCreators } from 'redux';
 import { func, string, bool } from 'prop-types';
 import { Grid, Button, Typography, TextField, FormControlLabel, FormGroup, FormLabel, CircularProgress, Paper } from '@material-ui/core';
 import Countdown from 'react-countdown-now';
+import queryString from 'query-string';
+import { withRouter } from 'react-router-dom';
+
+import { First } from '../../';
 
 import {
     getMotion,
@@ -36,21 +40,22 @@ class Requestor extends Component {
         newMotionItem: newMotionInterface
     };
 
-    static getDerivedStateFromProps(nextProps, prevState) {
-        const {
-            checkMotionForRequestorDeals,
-            history,
-            userID,
-            newMotionItem
-        } = nextProps;
-        const { checked } = prevState;
-        if(!checked && !!newMotionItem){
-            const { key } = newMotionItem;
-            checkMotionForRequestorDeals({ key, history, userID });
-            return { checked: true }
-        }
-        return null;
-    };
+    // static getDerivedStateFromProps(nextProps, prevState) {
+    //     const {
+    //         checkMotionForRequestorDeals,
+    //         history,
+    //         userID,
+    //         newMotionItem
+    //     } = nextProps;
+    //     const { checked } = prevState;
+    //     if(!checked && !!newMotionItem){
+    //         const { key } = newMotionItem;
+    //         console.log('HISTORY', history);
+    //         checkMotionForRequestorDeals({ key, history, userID });
+    //         return { checked: true }
+    //     }
+    //     return null;
+    // };
 
     componentWillUnmount() {
         const { unsetNewMotionItem } = this.props;
@@ -62,14 +67,17 @@ class Requestor extends Component {
         const {
             getMotion,
             newMotionItem,
-            location: { pathname }
-            } = this.props;
-            if(!newMotionItem) {
-                getMotion(pathname);
-            }
+            location
+        } = this.props;
+        if (!newMotionItem) {
+            const { search } = location;
+            const { motionID } = queryString.parse(search);
+            getMotion(motionID);
+        }
     };
 
     componentDidUpdate() {
+        console.log('DID_UPADETE');
         const { checked } = this.state;
         if (!checked) {
             setInterval(this.checkCountdown, 1000);
@@ -79,6 +87,7 @@ class Requestor extends Component {
     render() {
         const { text, money } = this.state;
         const { isLoading, newMotionItem } = this.props;
+        console.log('PROPS', this.props);
         if(!newMotionItem || isLoading){
             return (
                 <Paper>
@@ -100,6 +109,8 @@ class Requestor extends Component {
                                     color='secondary'
                                 />}
                         />
+                        <Grid item>
+                        </Grid>
                         <Grid
                             item
                             children={
@@ -141,7 +152,7 @@ class Requestor extends Component {
                 <Grid item>
                     <Typography
                         children={motionName}
-                        variant="display3"
+                        variant="h3"
                         align="center"
                         gutterBottom
                     />
@@ -149,7 +160,7 @@ class Requestor extends Component {
                 <Grid item>
                     <Typography
                         children={operatorName}
-                        variant="display2"
+                        variant="h2"
                         align="center"
                         gutterBottom
                     />
@@ -169,6 +180,14 @@ class Requestor extends Component {
                     />
                 </Grid>
                 <Grid item>
+                    <First
+                        onChange={this.handleTextChange}
+                        onSubmit={this.handleSubmit}
+                        money={money}
+                        disabled={!money || !text}
+                    />
+                </Grid>
+                {/* <Grid item>
                         <FormLabel component="legend">My Bid</FormLabel>
                         <FormGroup>
                             <FormControlLabel
@@ -189,7 +208,7 @@ class Requestor extends Component {
                     }
                     children="Submit"
                     disabled={!money || !text}
-                />
+                /> */}
             </Grid>
         );
     }
@@ -263,4 +282,4 @@ const mapDispatchToProps = dispatch => bindActionCreators({
     unsetNewMotionItem
 }, dispatch);
 
-export default connect(mapStateToProps, mapDispatchToProps)(Requestor);
+export default connect(mapStateToProps, mapDispatchToProps)(withRouter(Requestor));

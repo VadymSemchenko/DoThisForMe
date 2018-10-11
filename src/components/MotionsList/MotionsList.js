@@ -21,7 +21,6 @@ const MotionList = ({ motions, userID, removeMotion }) => {
             deadline
           }) => {
             const isAuthor = (operatorID === userID);
-            console.log('IS_AUTHOR', isAuthor);
             const isObsolete = Date.now() >= deadline;
             const chipText = isObsolete ? 'OBSOLETE' : <Countdown date={deadline} />;
             const chipColor = isObsolete ?  'secondary' : 'primary';
@@ -35,11 +34,11 @@ const MotionList = ({ motions, userID, removeMotion }) => {
                   <SnackbarContent
                     message={`${operatorName}: ${motionName}`}
                   />
-                  {isAuthor &&
+                  {(isAuthor && userID) &&
                     <Fragment>
                       <Button
                         component={Link}
-                        to={`${OPERATOR}/?operator=${userID}&motion=${key}`}
+                        to={`${OPERATOR}?operatorID=${userID}&motionID=${key}`}
                         variant='contained'
                         color='primary'
                         children='MANAGE'
@@ -53,10 +52,10 @@ const MotionList = ({ motions, userID, removeMotion }) => {
                       />
                     </Fragment>
                     }
-                    {!isAuthor &&
+                    {(!isAuthor && userID) &&
                       <Button
                         component={Link}
-                        to={`${REQUESTOR}/?requestor=${userID}&operator=${operatorID}&motion=${key}`}
+                        to={`${REQUESTOR}/?requestorID=${userID}&operatorID=${operatorID}&motionID=${key}`}
                         variant='contained'
                         color='primary'
                         children='JOIN'
