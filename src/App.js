@@ -16,9 +16,9 @@ const App = ({ userID }) => {
         <Layouts.Header/>
         <Switch>
           <PrivateRoute path={Routes.OPERATOR_CREATE} component={Components.OperatorCreate} condition={userID} redirectRoute={Routes.SIGN_IN} />
-          <PrivateRoute path={Routes.REQUESTOR} component={Components.Requestor} condition={userID} redirectRoute={Routes.SIGN_IN} />
+          <PrivateRoute path={Routes.REQUESTOR} component={Components.RequestorMain} condition={userID} redirectRoute={Routes.SIGN_IN} />
           {/* <PrivateRoute path={`${Routes.DEALS}/:motionId/:requestorId`} component={Components.DealScreen} condition={userID} redirectRoute={Routes.SIGN_IN} /> */}
-          <PrivateRoute path={Routes.OPERATOR} component={Components.ManageScreen} condition={userID} redirectRoute={Routes.SIGN_IN} />
+          <PrivateRoute path={Routes.OPERATOR} component={Components.OperatorManage} condition={userID} redirectRoute={Routes.SIGN_IN} />
           <PrivateRoute path={Routes.SIGN_IN} component={Components.SignIn} condition={!userID} />
           <Route exact path={Routes.HOME} component={Components.Home} />
           <Route path={Routes.PRIVACY_POLICY} component={Screens.InfoPage} />

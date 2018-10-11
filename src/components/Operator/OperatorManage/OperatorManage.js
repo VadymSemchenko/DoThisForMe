@@ -5,12 +5,12 @@ import { bindActionCreators } from 'redux';
 import { Redirect } from 'react-router-dom';
 import { func, array, string } from 'prop-types';
 import queryString from 'query-string';
+import Countdown from 'react-countdown-now';
 
 import {
     startListeningForDeals,
     stopListeningForDeals,
     throwError,
-    getMotion,
     unsetNewMotionItem,
     unsetDeals,
     setBid,
@@ -21,7 +21,7 @@ import { newMotionInterface } from '../../../constants/interfaces';
 import { HOME } from '../../../constants/routes';
 import { DealItem } from '../..';
 
-class MotionScreen extends Component {
+class OperatorManage extends Component {
 
     state = {
         selectedDeal: '',
@@ -33,7 +33,6 @@ class MotionScreen extends Component {
         startListeningForDeals: func.isRequired,
         stopListeningForDeals: func.isRequired,
         throwError: func.isRequired,
-        getMotion: func.isRequired,
         unsetNewMotionItem: func.isRequired,
         newMotionItem: newMotionInterface,
         userID: string.isRequired
@@ -77,7 +76,7 @@ class MotionScreen extends Component {
             throwError
         } = this.props;
         const noDeals = deals.length === 0;
-        const { motionID, operatorID } = queryString.parse(search);
+        const { motionID, operatorID, deadline } = queryString.parse(search);
         const { selectedDeal } = this.state;
         if(userID !== operatorID) {
             throwError('You are not allowed to manage this motion!');
@@ -89,13 +88,14 @@ class MotionScreen extends Component {
             direction="column"
             alignItems="center"
             >
+                <Countdown date={deadline} />
                 {noDeals &&
-                    <Grid item>
-                        <Typography
-                            variant="display2"
-                            children="No deals yet"
-                        />
-                    </Grid>
+                <Grid item>
+                    <Typography
+                        variant="display2"
+                        children="No deals yet"
+                    />
+                </Grid>
                 }
                 {deals.map(item =>
                     <DealItem
@@ -104,6 +104,7 @@ class MotionScreen extends Component {
                         selectedDeal={selectedDeal}
                         userID={userID}
                         pathname={pathname}
+                        search={search}
                         setBid={setBid}
                         deleteDeal={deleteDeal}
                         acceptBid={acceptBid}
@@ -120,6 +121,29 @@ class MotionScreen extends Component {
         }))
     };
 
+    submitRebid = (pathname) => {
+        const { setBid } = this.props;
+        const { bidInputValue, userStatus } = this.state;
+        if(bidInputValue){
+            setBid({ pathname, value: bidInputValue, userStatus });
+            this.setState(() => ({
+                bidInputValue: '',
+                rebidIsOpen: false
+            }))
+        }
+    };
+
+    handleBidAccept = (pathname) => {
+        const { acceptBid } = this.props;
+        const { userStatus } = this.state;
+        acceptBid({ pathname, userStatus });
+    };
+
+    handleBidReject = (pathname) => {
+        const { deleteDeal } = this.props;
+        deleteDeal(pathname)
+    };
+
 };
 
 const mapStateToProps = ({
@@ -134,11 +158,10 @@ const mapDispatchToProps = (dispatch) => bindActionCreators({
     startListeningForDeals,
     unsetNewMotionItem,
     throwError,
-    getMotion,
     unsetDeals,
     setBid,
     acceptBid,
     deleteDeal
 }, dispatch);
 
-export default connect(mapStateToProps, mapDispatchToProps)(MotionScreen);
+export default connect(mapStateToProps, mapDispatchToProps)(OperatorManage);

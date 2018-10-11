@@ -2,8 +2,7 @@ import React, { Fragment } from 'react';
 import { func, string, bool } from 'prop-types';
 import { Grid, Button, Typography, TextField, FormControlLabel, FormGroup, FormLabel, CircularProgress, Paper } from '@material-ui/core';
 
-const First = ({ money, onChange, Button, onSubmit, disabled }) => {
-    console.log('FIRST');
+const First = ({ money, onChange, onSubmit, disabled }) => {
     return (
         <Fragment>
             <FormLabel component="legend">
@@ -15,9 +14,13 @@ const First = ({ money, onChange, Button, onSubmit, disabled }) => {
                             type="text"
                             onChange={onChange}
             />
-            <Button>
-                test
-            </Button>
+            <Button
+                variant="contained"
+                color="primary"
+                children="My Bid"
+                onClick={onSubmit}
+                disabled={disabled}
+            />
         </Fragment>
     );
 };

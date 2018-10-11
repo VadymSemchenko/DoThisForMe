@@ -2,25 +2,26 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { func, string, bool } from 'prop-types';
-import { Grid, Button, Typography, TextField, FormControlLabel, FormGroup, FormLabel, CircularProgress, Paper } from '@material-ui/core';
+import { Grid, Button, Typography, TextField, FormControlLabel, FormGroup, FormLabel, LinearProgress, CircularProgress, Paper } from '@material-ui/core';
 import Countdown from 'react-countdown-now';
 import queryString from 'query-string';
-import { withRouter } from 'react-router-dom';
 
-import { First } from '../../';
+import { RequestorFirst, RequestorReask, RequestorRebid, RequestorComplete } from '../..';
 
 import {
     getMotion,
     throwError,
     initDeal,
     checkMotionForRequestorDeals,
-    unsetNewMotionItem
+    unsetNewMotionItem,
+    unsetCurrentDeal,
+    getDeal,
+    acceptBid
 } from '../../../store/actionCreators';
 import { newMotionInterface } from '../../../constants/interfaces';
 import { HOME } from '../../../constants/routes';
-import { REQUESTOR } from '../../../constants/userStatus';
 
-class Requestor extends Component {
+class RequestorMain extends Component {
 
     state = {
         text: '',
@@ -40,26 +41,31 @@ class Requestor extends Component {
         newMotionItem: newMotionInterface
     };
 
-    // static getDerivedStateFromProps(nextProps, prevState) {
-    //     const {
-    //         checkMotionForRequestorDeals,
-    //         history,
-    //         userID,
-    //         newMotionItem
-    //     } = nextProps;
-    //     const { checked } = prevState;
-    //     if(!checked && !!newMotionItem){
-    //         const { key } = newMotionItem;
-    //         console.log('HISTORY', history);
-    //         checkMotionForRequestorDeals({ key, history, userID });
-    //         return { checked: true }
-    //     }
-    //     return null;
-    // };
+    static getDerivedStateFromProps(nextProps, prevState) {
+        const {
+            checkMotionForRequestorDeals,
+            userID,
+            newMotionItem,
+            getDeal,
+            currentDeal
+        } = nextProps;
+        const { checked } = prevState;
+        if (!!currentDeal) {
+            const { requestorTask, requestorBid } = currentDeal;
+            return { checked: true, text: requestorTask, money: requestorBid };
+        }
+        if (!checked && !!newMotionItem){
+            const { key } = newMotionItem;
+            checkMotionForRequestorDeals({ key, userID});
+            return { checked: true }
+        }
+        return null;
+    };
 
     componentWillUnmount() {
         const { unsetNewMotionItem } = this.props;
         unsetNewMotionItem();
+        unsetCurrentDeal();
         clearInterval(this.checkCountdown);
     };
 
@@ -77,7 +83,6 @@ class Requestor extends Component {
     };
 
     componentDidUpdate() {
-        console.log('DID_UPADETE');
         const { checked } = this.state;
         if (!checked) {
             setInterval(this.checkCountdown, 1000);
@@ -86,61 +91,17 @@ class Requestor extends Component {
 
     render() {
         const { text, money } = this.state;
-        const { isLoading, newMotionItem } = this.props;
-        console.log('PROPS', this.props);
+        const { isLoading, newMotionItem, currentDeal } = this.props;
         if(!newMotionItem || isLoading){
-            return (
-                <Paper>
-                    <Grid
-                        container
-                        justify="space-between"
-                    >
-                        <Grid
-                            item
-                            children={
-                                <CircularProgress
-                                    color='secondary'
-                                />}
-                        />
-                        <Grid
-                            item
-                            children={
-                                <CircularProgress
-                                    color='secondary'
-                                />}
-                        />
-                        <Grid item>
-                        </Grid>
-                        <Grid
-                            item
-                            children={
-                                <CircularProgress
-                                    color='secondary'
-                                />}
-                        />
-                        <Grid
-                            item
-                            children={
-                                <CircularProgress
-                                    color='secondary'
-                                />}
-                        />
-                        <Grid
-                            item
-                            children={
-                                <CircularProgress
-                                    color='secondary'
-                                />}
-                        />
-                    </Grid>
-                </Paper>);
+            return <LinearProgress color="secondary" variant="query" />
         }
         const {
             newMotionItem: {
                 operatorName,
                 operatorID,
                 motionName,
-                deadline
+                deadline,
+                userID
             }
         } = this.props;
         return (
@@ -152,7 +113,7 @@ class Requestor extends Component {
                 <Grid item>
                     <Typography
                         children={motionName}
-                        variant="h3"
+                        variant="display3"
                         align="center"
                         gutterBottom
                     />
@@ -160,7 +121,7 @@ class Requestor extends Component {
                 <Grid item>
                     <Typography
                         children={operatorName}
-                        variant="h2"
+                        variant="display2"
                         align="center"
                         gutterBottom
                     />
@@ -180,35 +141,34 @@ class Requestor extends Component {
                     />
                 </Grid>
                 <Grid item>
-                    <First
+                    {!currentDeal &&
+                    <RequestorFirst
                         onChange={this.handleTextChange}
                         onSubmit={this.handleSubmit}
                         money={money}
                         disabled={!money || !text}
-                    />
+                    />}
+                    {(!!currentDeal && (currentDeal.accepted && !!currentDeal.finalBid)) &&
+                    <RequestorComplete
+                        finalBid={currentDeal.finalBid}
+                    />}
+                    {(!!currentDeal && (!currentDeal.accepted && (currentDeal.lastBidBy === userID))) &&
+                    <RequestorReask
+                        onChange={this.handleTextChange}
+                        onSubmit={this.handleSubmit}
+                        money={money}
+                        disabled={!money || !text}
+                        clearInput={this.clearInput}
+                    />}
+                    {(!!currentDeal && (!currentDeal.accepted && (currentDeal.lastBidBy !== userID))) &&
+                    <RequestorRebid
+                        onChange={this.handleTextChange}
+                        onSubmit={this.handleSubmit}
+                        onAccept={this.handleAccept}
+                        money={money}
+                        disabled={!money || !text}
+                    />}
                 </Grid>
-                {/* <Grid item>
-                        <FormLabel component="legend">My Bid</FormLabel>
-                        <FormGroup>
-                            <FormControlLabel
-                                control={<TextField
-                                            name="money"
-                                            value={money}
-                                            type="text"
-                                            onChange={this.handleTextChange}
-                                        />}
-                            />
-                        </FormGroup>
-                </Grid>
-                <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={
-                        this.handleSubmit
-                    }
-                    children="Submit"
-                    disabled={!money || !text}
-                /> */}
             </Grid>
         );
     }
@@ -236,16 +196,25 @@ class Requestor extends Component {
             requestorID: userID,
             requestorName: userName,
             requestorBid: money,
+            lastBidBy: userID,
             requestorTask: text,
             motionReference: key,
             operatorName,
             operatorID,
             operatorBid: '',
+            finalBid: '',
             accepted: false,
             deadline,
             motionName
         };
         initDeal({ newDeal, history });
+    };
+
+    handleAccept = () => {
+        const { acceptBid, userID, currentDeal: {
+            operatorBid
+        } } = this.props;
+        acceptBid({ userID, finalBid: operatorBid });
     };
 
     checkCountdown = () => {
@@ -259,6 +228,10 @@ class Requestor extends Component {
         }
     }
 
+    clearInput = () => {
+        this.setState(() => ({ money: '' }));
+    };
+
 }
 
 const mapStateToProps = ({
@@ -269,17 +242,23 @@ const mapStateToProps = ({
     motionReducer: {
         newMotionItem
     },
+    dealReducer: {
+        currentDeal
+    },
     loadingReducer: {
         isLoading
     }
-}) => ({ userID, userName, newMotionItem, isLoading });
+}) => ({ userID, userName, newMotionItem, isLoading, currentDeal });
 
 const mapDispatchToProps = dispatch => bindActionCreators({
     getMotion,
     throwError,
     initDeal,
     checkMotionForRequestorDeals,
-    unsetNewMotionItem
+    unsetNewMotionItem,
+    getDeal,
+    unsetCurrentDeal,
+    acceptBid
 }, dispatch);
 
-export default connect(mapStateToProps, mapDispatchToProps)(withRouter(Requestor));
+export default connect(mapStateToProps, mapDispatchToProps)(RequestorMain);

@@ -38,7 +38,7 @@ const MotionList = ({ motions, userID, removeMotion }) => {
                     <Fragment>
                       <Button
                         component={Link}
-                        to={`${OPERATOR}?operatorID=${userID}&motionID=${key}`}
+                        to={`${OPERATOR}?operatorID=${userID}&motionID=${key}&deadline=${deadline}`}
                         variant='contained'
                         color='primary'
                         children='MANAGE'
