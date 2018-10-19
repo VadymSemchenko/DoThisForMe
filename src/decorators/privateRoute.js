@@ -26,7 +26,6 @@ const PrivateRoute = (props) => {
       message = 'You have already signed in!';
       finalRoute = HOME;
     } else if(pathname === SIGN_IN && search && search.includes('from=')){
-      console
       finalRoute = `${queryString.parse(search).from}?`;
       let counter = 0;
       const query = queryString.parse(search);

@@ -1,5 +1,5 @@
-import React, { Fragment } from 'react';
-import { func, string, bool } from 'prop-types';
+import React from 'react';
+import { string } from 'prop-types';
 import { SnackbarContent } from '@material-ui/core';
 
 const RequestorComplete = ({ finalBid }) => {

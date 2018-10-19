@@ -13,7 +13,7 @@ const persistConfig = {
     stateReconciler: autoMergeLevel2,
     storage,
     whitelist: ['authReducer']
-  }
+}
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 

@@ -1,12 +1,14 @@
 import React, { Component } from 'react';
+import { Redirect } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { func, string, bool } from 'prop-types';
-import { Grid, Button, Typography, TextField, FormControlLabel, FormGroup, FormLabel, LinearProgress, CircularProgress, Paper } from '@material-ui/core';
+import { Grid, Chip, Typography, TextField, LinearProgress } from '@material-ui/core';
 import Countdown from 'react-countdown-now';
 import queryString from 'query-string';
 
 import { RequestorFirst, RequestorReask, RequestorRebid, RequestorComplete } from '../..';
+import { HOME } from '../../../constants/routes';
 
 import {
     getMotion,
@@ -15,11 +17,10 @@ import {
     checkMotionForRequestorDeals,
     unsetNewMotionItem,
     unsetCurrentDeal,
-    getDeal,
-    acceptBid
+    acceptBid,
+    updateBid
 } from '../../../store/actionCreators';
 import { newMotionInterface } from '../../../constants/interfaces';
-import { HOME } from '../../../constants/routes';
 
 class RequestorMain extends Component {
 
@@ -38,22 +39,17 @@ class RequestorMain extends Component {
         unsetNewMotionItem: func.isRequired,
         userID: string,
         userName: string.isRequired,
-        newMotionItem: newMotionInterface
+        newMotionItem: newMotionInterface,
+        isCheckingDeals: bool.isRequired
     };
 
     static getDerivedStateFromProps(nextProps, prevState) {
         const {
             checkMotionForRequestorDeals,
             userID,
-            newMotionItem,
-            getDeal,
-            currentDeal
+            newMotionItem
         } = nextProps;
         const { checked } = prevState;
-        if (!!currentDeal) {
-            const { requestorTask, requestorBid } = currentDeal;
-            return { checked: true, text: requestorTask, money: requestorBid };
-        }
         if (!checked && !!newMotionItem){
             const { key } = newMotionItem;
             checkMotionForRequestorDeals({ key, userID});
@@ -63,10 +59,9 @@ class RequestorMain extends Component {
     };
 
     componentWillUnmount() {
-        const { unsetNewMotionItem } = this.props;
+        const { unsetNewMotionItem, unsetCurrentDeal } = this.props;
         unsetNewMotionItem();
         unsetCurrentDeal();
-        clearInterval(this.checkCountdown);
     };
 
     componentDidMount() {
@@ -82,17 +77,18 @@ class RequestorMain extends Component {
         }
     };
 
-    componentDidUpdate() {
-        const { checked } = this.state;
-        if (!checked) {
-            setInterval(this.checkCountdown, 1000);
-        }
-    };
-
     render() {
-        const { text, money } = this.state;
-        const { isLoading, newMotionItem, currentDeal } = this.props;
-        if(!newMotionItem || isLoading){
+        const { text, money, checked } = this.state;
+        const {
+            isLoading,
+            newMotionItem,
+            currentDeal,
+            history,
+            isCheckingDeals,
+            throwError
+        } = this.props;
+        const placeholder = currentDeal ? currentDeal.requestorTask : "Please, buy something for me";
+        if(!newMotionItem || isLoading || !checked){
             return <LinearProgress color="secondary" variant="query" />
         }
         const {
@@ -101,9 +97,15 @@ class RequestorMain extends Component {
                 operatorID,
                 motionName,
                 deadline,
-                userID
-            }
+            },
+            userID
         } = this.props;
+        if(userID === operatorID){
+            throwError('You are not allowed to attend this page');
+            return <Redirect to={HOME}/>;
+        }
+        const isObsolete = Date.now() >= deadline;
+        const disabled = (isObsolete||(!!currentDeal && !!currentDeal.accepted));
         return (
             <Grid
             container
@@ -127,46 +129,57 @@ class RequestorMain extends Component {
                     />
                 </Grid>
                 <Grid item>
-                    <Countdown date={deadline} />
+                    {isObsolete ? <Chip color="secondary" label="OBSOLETE" /> : <Countdown date={deadline} />}
                 </Grid>
                 <Grid item>
                     <TextField
-                        placeholder="Please, buy something for me"
+                        placeholder={placeholder}
                         name="text"
                         type="text"
                         value={text}
                         onChange={this.handleTextChange}
+                        onFocus={this.toggleFreezeInput}
                         multiline
                         rows="5"
+                        disabled={disabled}
                     />
                 </Grid>
                 <Grid item>
-                    {!currentDeal &&
+                    {(!currentDeal && !isCheckingDeals) &&
                     <RequestorFirst
                         onChange={this.handleTextChange}
                         onSubmit={this.handleSubmit}
                         money={money}
                         disabled={!money || !text}
+                        throwError={throwError}
+                        isObsolete={isObsolete}
+                        history={history}
+                        deadline={deadline}
                     />}
-                    {(!!currentDeal && (currentDeal.accepted && !!currentDeal.finalBid)) &&
+                    {(!!currentDeal && currentDeal.accepted) &&
                     <RequestorComplete
                         finalBid={currentDeal.finalBid}
                     />}
                     {(!!currentDeal && (!currentDeal.accepted && (currentDeal.lastBidBy === userID))) &&
                     <RequestorReask
-                        onChange={this.handleTextChange}
-                        onSubmit={this.handleSubmit}
                         money={money}
-                        disabled={!money || !text}
+                        requestorBid={currentDeal.requestorBid}
+                        onChange={this.handleTextChange}
+                        onUpdate={this.handleUpdate}
+                        disabled={!text}
+                        isObsolete={isObsolete}
                         clearInput={this.clearInput}
                     />}
                     {(!!currentDeal && (!currentDeal.accepted && (currentDeal.lastBidBy !== userID))) &&
                     <RequestorRebid
+                        operatorBid={currentDeal.operatorBid}
+                        requestorBid={currentDeal.requestorBid}
                         onChange={this.handleTextChange}
-                        onSubmit={this.handleSubmit}
+                        onUpdate={this.handleUpdate}
                         onAccept={this.handleAccept}
+                        isObsolete={isObsolete}
                         money={money}
-                        disabled={!money || !text}
+                        disabled={!money}
                     />}
                 </Grid>
             </Grid>
@@ -208,28 +221,46 @@ class RequestorMain extends Component {
             motionName
         };
         initDeal({ newDeal, history });
+        this.clearInput();
     };
 
     handleAccept = () => {
         const { acceptBid, userID, currentDeal: {
-            operatorBid
+            operatorBid, motionReference
         } } = this.props;
-        acceptBid({ userID, finalBid: operatorBid });
+        const bidArgs = {
+            dealReference: userID,
+            finalBid: operatorBid,
+            motionReference
+        };
+        acceptBid(bidArgs);
     };
 
-    checkCountdown = () => {
-        const { throwError, newMotionItem, history } = this.props;
-        if (!!newMotionItem) {
-            const { deadline } = newMotionItem;
-            if (Date.now() >= deadline) {
-                throwError('This motion is obsolete!');
-                history.replace(HOME);
+    handleUpdate = () => {
+        const {
+            updateBid,
+            userID,
+            newMotionItem: {
+                key
             }
+        } = this.props;
+        const { text, money } = this.state;
+        const newBidFeatures = {
+            motionReference: key,
+            userID,
+            requestorID: userID,
+            requestorBid: money,
+            lastBidBy: userID
+        };
+        if (!!text) {
+            newBidFeatures.requestorTask = text;
         }
+        updateBid(newBidFeatures);
+        this.clearInput();
     }
 
     clearInput = () => {
-        this.setState(() => ({ money: '' }));
+        this.setState(() => ({ money: '', text: '' }));
     };
 
 }
@@ -243,12 +274,13 @@ const mapStateToProps = ({
         newMotionItem
     },
     dealReducer: {
-        currentDeal
+        currentDeal,
+        isCheckingDeals
     },
     loadingReducer: {
         isLoading
     }
-}) => ({ userID, userName, newMotionItem, isLoading, currentDeal });
+}) => ({ userID, userName, newMotionItem, isLoading, currentDeal, isCheckingDeals });
 
 const mapDispatchToProps = dispatch => bindActionCreators({
     getMotion,
@@ -256,9 +288,9 @@ const mapDispatchToProps = dispatch => bindActionCreators({
     initDeal,
     checkMotionForRequestorDeals,
     unsetNewMotionItem,
-    getDeal,
     unsetCurrentDeal,
-    acceptBid
+    acceptBid,
+    updateBid
 }, dispatch);
 
 export default connect(mapStateToProps, mapDispatchToProps)(RequestorMain);

@@ -1,7 +1,6 @@
 import * as actionTypes from './actionTypes';
 import { database, auth, googleAuthProvider, timestamp } from '../firebase';
-import { HOME, OPERATOR, REQUESTOR } from '../constants/routes';
-import { MOTIONS, DEALS } from '../constants/dbRoutes';
+import { OPERATOR, REQUESTOR } from '../constants/routes';
 
 const motionsRef = database.ref('motions');
 const dealsRef = database.ref('deals');
@@ -10,8 +9,8 @@ export const initMotion = ({ newMotion, history }) => (dispatch) => {
   dispatch({ type: actionTypes.START_LOADING });
   return motionsRef.push(newMotion)
     .then(({ key }) => {
-      const { operatorID } = newMotion;
-      history.push(`${OPERATOR}?motionID=${key}`);
+      const { operatorID, deadline } = newMotion;
+      history.push(`${OPERATOR}?motionID=${key}&operatorID=${operatorID}&deadline=${deadline}`);
       dispatch({ type: actionTypes.FINISH_LOADING });
     })
     .catch(({ message }) => {
@@ -107,7 +106,7 @@ export const initDeal = ({ newDeal, history }) => (dispatch) => {
     type: actionTypes.START_LOADING
   });
   const { motionReference, requestorID } = newDeal;
-  dealsRef.child(`/${motionReference}/${requestorID}`).set({ ...newDeal, timestamp })
+  dealsRef.child(`/${motionReference}/${requestorID}`).set({ ...newDeal, timestamp, operatorBid: '' })
     .then(() => {
         history.push(`${REQUESTOR}?motionID=${motionReference}&requestorID=${requestorID}`);
         dispatch({ type: actionTypes.FINISH_LOADING });
@@ -117,95 +116,33 @@ export const initDeal = ({ newDeal, history }) => (dispatch) => {
       dispatch({ type: actionTypes.FINISH_LOADING });
     });
 };
-
-// export const checkMotionForRequestorDeals = ({ key, history, userID }) => (dispatch) => {
-//   dispatch({ type: actionTypes.START_LOADING });
-//   const result = dealsRef.child(`${key}/${userID}`).once('value')
-//     .then(snapshot => {
-//       if(snapshot.exists()){
-//         const snapVal = snapshot.val();
-//         const { requestorID } = snapVal;
-//         const isRequestor = userID === requestorID;
-//         if(isRequestor){
-//           history.push(`${REQUESTOR}?motionID=${key}&requestorID=${userID}`);
-//           dispatch({ type: actionTypes.FINISH_LOADING });
-//           return true;
-//         }
-//         dispatch({ type: actionTypes.FINISH_LOADING });
-//         return false;
-//       } else{
-//         dispatch({ type: actionTypes.FINISH_LOADING });
-//         return false;
-//       }
-//     })
-//     .catch(({ message }) => {
-//       dispatch({ type: actionTypes.FINISH_LOADING });
-//       dispatch({ type: actionTypes.SET_ERROR, payload: message });
-//       return false;
-//     });
-//     return result;
-// };
-
 export const checkMotionForRequestorDeals = ({ key, userID }) => (dispatch) => {
   dispatch({ type: actionTypes.START_LOADING });
-  const result = dealsRef.child(`${key}/${userID}`).once('value')
-    .then(snapshot => {
-      if(snapshot.exists()){
-        const snapVal = snapshot.val();
-        const { requestorID } = snapVal;
-        const isRequestor = userID === requestorID;
-        if(isRequestor){
-          dispatch({
-            type: actionTypes.GET_CURRENT_DEAL,
-            payload: snapVal
-           });
-          return true;
-        }
+  dispatch({ type: actionTypes.START_CHECKING_DEALS })
+  dealsRef.child(`${key}/${userID}`).on('value', snapshot => {
+    if(snapshot.exists()){
+      const snapVal = snapshot.val();
+      const { requestorID } = snapVal;
+      const isRequestor = userID === requestorID;
+      if(isRequestor){
+        dispatch({
+          type: actionTypes.GET_CURRENT_DEAL,
+          payload: snapVal
+         });
         dispatch({ type: actionTypes.FINISH_LOADING });
-        return false;
-      } else{
-        dispatch({ type: actionTypes.FINISH_LOADING });
-        return false;
+        dispatch({ type: actionTypes.FINISH_CHECKING_DEALS });
+        return true;
       }
-    })
-    .catch(({ message }) => {
       dispatch({ type: actionTypes.FINISH_LOADING });
-      dispatch({ type: actionTypes.SET_ERROR, payload: message });
+      dispatch({ type: actionTypes.FINISH_CHECKING_DEALS });
       return false;
-    });
-    return result;
+    } else{
+      dispatch({ type: actionTypes.FINISH_LOADING });
+      dispatch({ type: actionTypes.FINISH_CHECKING_DEALS });
+      return false;
+    }
+  });
 };
-
-// export const getDeal = ({ pathname, history }) => dispatch => {
-//   dispatch({ type: actionTypes.START_LOADING });
-//   const urlRef = database.refFromURL(`${process.env.REACT_APP_DB_URL}/${pathname}`);
-//   urlRef.once('value')
-//     .then((snapshot) => {
-//       const { key } = snapshot;
-//       if(snapshot.exists()) {
-//         const deal = { ...snapshot.val(), key };
-//         dispatch({
-//           type: actionTypes.GET_CURRENT_DEAL,
-//           payload: deal
-//         });
-//         dispatch({ type: actionTypes.FINISH_LOADING });
-//       } else{
-//         const message = 'This deal has been removed';
-//         dispatch({
-//           type: actionTypes.SET_ERROR,
-//           payload: message
-//         });
-//         history.push(HOME);
-//       }
-//     })
-//     .catch(({ message }) => {
-//       dispatch({
-//         type: actionTypes.SET_ERROR,
-//         payload: message
-//       });
-//       dispatch({ type: actionTypes.FINISH_LOADING });
-//     })
-// }
 
 export const startListeningForDeals = (motionID = '') => dispatch => {
     if(!!motionID) {
@@ -261,10 +198,10 @@ export const listenToDealStatusChanges = (pathname) => dispatch => {
   }
 };
 
-export const setBid = ({ id, operatorBid }) => dispatch => {
+export const updateBid = (args) => dispatch => {
   dispatch({ type: actionTypes.START_LOADING });
-  // const urlRef = database.refFromURL(`${process.env.REACT_APP_DB_URL}/${pathname}`);
-  dealsRef.child(id).set({ operatorBid, latestBidBy: id })
+  const { motionReference, requestorID, ...rest } = args;
+  dealsRef.child(`${motionReference}/${requestorID}`).update(rest)
     .then(() => { dispatch({ type: actionTypes.FINISH_LOADING }) })
     .catch(({message}) => {
       dispatch({
@@ -275,10 +212,9 @@ export const setBid = ({ id, operatorBid }) => dispatch => {
   });
 };
 
-export const deleteDeal = (id) => dispatch => {
+export const deleteDeal = ({ motionReference, requestorID }) => dispatch => {
   dispatch({ type: actionTypes.START_LOADING });
-  // const urlRef = database.refFromURL(`${process.env.REACT_APP_DB_URL}/${pathname}`);
-  dealsRef.child(`${motionID}/${requestorID}`).remove()
+  dealsRef.child(`${motionReference}/${requestorID}`).remove()
     .then(() => {
       dispatch({ type: actionTypes.FINISH_LOADING });
     })
@@ -293,13 +229,13 @@ export const deleteDeal = (id) => dispatch => {
     })
 };
 
-export const acceptBid = ({ pathname, userStatus }) => dispatch => {
-  dispatch({ type: actionTypes.START_LOADING });
-  const urlRef = database.refFromURL(`${process.env.REACT_APP_DB_URL}/${pathname}`);
-  urlRef.child('status').set({
-    accepted: true
-  });
-  dispatch({ type: actionTypes.FINISH_LOADING });
+export const acceptBid = ({ dealReference, finalBid, motionReference }) => dispatch => {
+  dealsRef.child(`${motionReference}/${dealReference}`).update({
+    accepted: true,
+    finalBid
+  })
+    .then(() => dispatch({ type: actionTypes.FINISH_LOADING }))
+    .catch(({ message }) => throwError(message));
 };
 
 export const unsetDeals = () => ({

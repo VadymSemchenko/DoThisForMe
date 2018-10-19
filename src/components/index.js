@@ -4,11 +4,7 @@ export { default as OperatorManage } from './Operator/OperatorManage/OperatorMan
 export { default as MotionsList } from './MotionsList/MotionsList';
 export { default as RequestorMain } from './Requestor/RequestorMain/RequestorMain';
 export { default as SignIn } from './SignIn/SignIn';
-// export { default as DealScreen } from './Operator/DealScreen/DealScreen';
-export { default as AccordeonItem } from './Operator/AccordeonItem/AccordeonItem';
 export { default as DealItem } from './Operator/DealItem/DealItem';
-// export { default as BidScreen } from './Operator/BidScreen/BidScreen';
-// export { default as WaitScreen } from './Operator/WaitScreen/WaitScreen';
 export { default as RequestorFirst } from './Requestor/RequestorFirst/RequestorFirst';
 export { default as RequestorReask } from './Requestor/RequestorReask/RequestorReask';
 export { default as RequestorRebid } from './Requestor/RequestorRebid/RequestorRebid';

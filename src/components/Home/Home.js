@@ -37,26 +37,31 @@ class Home extends Component {
                     container
                     direction="column"
                     alignItems="center"
+                    justify="space-around"
                 >
-                   {iFrameIsOpen &&
-                   <Card>
-                        <iframe
-                            width="560"
-                            height="315"
-                            src="https://www.youtube.com/embed/MjJtGxG3zrc"
-                            frameBorder="0"
-                            allow="autoplay; encrypted-media"
-                            title="How It Works"
-                        />
-                    </Card>}
-                    {!iFrameIsOpen &&
-                    <Grid item={true}>
+                   {iFrameIsOpen && (
+                       <Grid item>
+                            <Card>
+                                <iframe
+                                    width="560"
+                                    height="315"
+                                    src="https://www.youtube.com/embed/MjJtGxG3zrc"
+                                    frameBorder="0"
+                                    allow="autoplay; encrypted-media"
+                                    title="How It Works"
+                                />
+                            </Card>
+                       </Grid>
+                   )}
+                    {!iFrameIsOpen && (
+                    <Grid item>
                         <IconButton
                             children={<PlayCircleFilled color="primary" />}
                             onClick={this.toggleIFrame}
                         />
-                    </Grid>}
-                    <Grid item={true}>
+                    </Grid>)
+                    }
+                    <Grid item>
                         <Button
                             children={btnText}
                             variant="contained"
@@ -64,14 +69,7 @@ class Home extends Component {
                             onClick={this.toggleIFrame}
                         />
                     </Grid>
-                    <Grid item={true}>
-                        <Grid
-                            container={true}
-                            direction="row"
-                            justify="center"
-                        />
-                    </Grid>
-                    <Grid item={true}>
+                    <Grid item>
                         <MotionsList
                             handleClick={this.handleClick}
                             motions={motions}
@@ -79,16 +77,21 @@ class Home extends Component {
                             removeMotion={removeMotion}
                         />
                     </Grid>
-                    {userID &&
+                    {userID && (
                         <Fragment>
-                            <div>or</div>
-                            <Button
-                                children={'I mote!'}
-                                color='secondary'
-                                component={Link}
-                                to={OPERATOR_CREATE}
-                            />
-                        </Fragment>
+                            <Grid item>
+                                <div>or</div>
+                            </Grid>
+                            <Grid item>
+                                <Button
+                                    children={'I mote!'}
+                                    color='secondary'
+                                    component={Link}
+                                    to={OPERATOR_CREATE}
+                                    variant='contained'
+                                />
+                            </Grid>
+                        </Fragment>)
                     }
                 </Grid>
             </main>

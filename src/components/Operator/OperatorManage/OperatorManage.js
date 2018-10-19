@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Grid, Typography } from '@material-ui/core';
+import { Grid, Typography, Chip } from '@material-ui/core';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { Redirect } from 'react-router-dom';
@@ -13,7 +13,7 @@ import {
     throwError,
     unsetNewMotionItem,
     unsetDeals,
-    setBid,
+    updateBid,
     acceptBid,
     deleteDeal
 } from '../../../store/actionCreators';
@@ -24,7 +24,7 @@ import { DealItem } from '../..';
 class OperatorManage extends Component {
 
     state = {
-        selectedDeal: '',
+        expanded: null,
         motionID: ''
     };
 
@@ -67,17 +67,17 @@ class OperatorManage extends Component {
             userID,
             deals,
             location: {
-                search,
-                pathname
+                search
             },
             deleteDeal,
             acceptBid,
-            setBid,
-            throwError
+            throwError,
+            updateBid
         } = this.props;
         const noDeals = deals.length === 0;
         const { motionID, operatorID, deadline } = queryString.parse(search);
-        const { selectedDeal } = this.state;
+        const { expanded } = this.state;
+        const isObsolete = deadline < Date.now();
         if(userID !== operatorID) {
             throwError('You are not allowed to manage this motion!');
             return <Redirect to={HOME}/>
@@ -88,7 +88,14 @@ class OperatorManage extends Component {
             direction="column"
             alignItems="center"
             >
-                <Countdown date={deadline} />
+                <Grid item>
+                    {isObsolete && (
+                        <Chip label="OBSOLETE" color="secondary" />
+                    )}
+                    {!isObsolete && (
+                        <Chip label={<Countdown date={+deadline} />} color="primary" />
+                    )}
+                </Grid>
                 {noDeals &&
                 <Grid item>
                     <Typography
@@ -97,52 +104,31 @@ class OperatorManage extends Component {
                     />
                 </Grid>
                 }
-                {deals.map(item =>
-                    <DealItem
-                        key={item.requestorID}
-                        item={item}
-                        selectedDeal={selectedDeal}
-                        userID={userID}
-                        pathname={pathname}
-                        search={search}
-                        setBid={setBid}
-                        deleteDeal={deleteDeal}
-                        acceptBid={acceptBid}
-                        handleDealSelect={() => this.handleDealSelect(item.requestorID)}
-                        handleDeselect={() => this.handleDealSelect('')}
-                    />)}
+                {deals.map(item =>{
+                    const { requestorID } = item;
+                    return (
+                        <DealItem
+                            item={item}
+                            key={requestorID}
+                            userID={userID}
+                            updateBid={updateBid}
+                            submitReject={() => deleteDeal({ motionID, requestorID })}
+                            acceptBid={acceptBid}
+                            handleChange={this.handleChange(requestorID)}
+                            expanded={expanded === requestorID}
+                            isObsolete={isObsolete}
+                        />
+                    );
+                })}
             </Grid>
         );
     };
 
-    handleDealSelect = (id) => {
-        this.setState(() => ({
-            selectedDeal: id
-        }))
-    };
-
-    submitRebid = (pathname) => {
-        const { setBid } = this.props;
-        const { bidInputValue, userStatus } = this.state;
-        if(bidInputValue){
-            setBid({ pathname, value: bidInputValue, userStatus });
-            this.setState(() => ({
-                bidInputValue: '',
-                rebidIsOpen: false
-            }))
-        }
-    };
-
-    handleBidAccept = (pathname) => {
-        const { acceptBid } = this.props;
-        const { userStatus } = this.state;
-        acceptBid({ pathname, userStatus });
-    };
-
-    handleBidReject = (pathname) => {
-        const { deleteDeal } = this.props;
-        deleteDeal(pathname)
-    };
+    handleChange = panel => (event, expanded) => {
+        this.setState({
+          expanded: expanded ? panel : false,
+        });
+      };
 
 };
 
@@ -156,10 +142,11 @@ const mapStateToProps = ({
 }) => ({ deals, userID });
 const mapDispatchToProps = (dispatch) => bindActionCreators({
     startListeningForDeals,
+    stopListeningForDeals,
     unsetNewMotionItem,
     throwError,
     unsetDeals,
-    setBid,
+    updateBid,
     acceptBid,
     deleteDeal
 }, dispatch);

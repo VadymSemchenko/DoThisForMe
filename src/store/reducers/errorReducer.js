@@ -8,13 +8,9 @@ export default function errorReducer(state = initialErrorState, action) {
     const { type, payload } = action;
     switch(type) {
         case SET_ERROR:
-            return {
-        ...state, error: payload
-        };
+            return { error: payload };
         case DELETE_ERROR:
-            return {
-        ...state, error: ''
-        };
+            return { error: '' };
         default:
             return state;
         }

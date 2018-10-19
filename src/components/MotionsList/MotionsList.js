@@ -1,40 +1,62 @@
 import React, { Fragment } from 'react';
 import { string, func, array, shape } from 'prop-types';
-import ListItem from '@material-ui/core/ListItem';
-import Divider from '@material-ui/core/Divider';
-import List from '@material-ui/core/List';
-import Button from '@material-ui/core/Button';
-import Chip from '@material-ui/core/Chip';
-import Countdown from 'react-countdown-now';
-import SnackbarContent from '@material-ui/core/SnackbarContent';
+import {
+  List,
+  ListItem,
+  Button,
+  Chip,
+  Typography,
+  withStyles,
+  Paper
+}from '@material-ui/core/';
 import { Link } from 'react-router-dom';
+import Countdown from 'react-countdown-now';
 
-import { DEALS, REQUESTOR, OPERATOR } from '../../constants/routes';
+import { REQUESTOR, OPERATOR } from '../../constants/routes';
 
-const MotionList = ({ motions, userID, removeMotion }) => {
+const styles = {
+  operatorName: {
+    flexGrow: 1,
+    margin: '0 2vw'
+  },
+  listRow: {
+    width: '100%'
+  },
+  list: {
+    width: '100%',
+    marginTop: '50px'
+  }
+};
+
+const MotionList = (props) => {
+  const { motions, userID, removeMotion, classes } = props;
   return (
-    <List>{motions.map(({
+    <Paper>
+      <List
+        className={classes.list}
+      >{motions.map(({
             key,
             operatorName,
             operatorID,
             motionName,
             deadline
           }) => {
-            const isAuthor = (operatorID === userID);
-            const isObsolete = Date.now() >= deadline;
-            const chipText = isObsolete ? 'OBSOLETE' : <Countdown date={deadline} />;
-            const chipColor = isObsolete ?  'secondary' : 'primary';
-            return (
-              <List key={key}>
-                <ListItem>
+              const isAuthor = (operatorID === userID);
+              const isObsolete = Date.now() >= deadline;
+              const chipText = isObsolete ? 'OBSOLETE' : <Countdown date={deadline} />;
+              const chipColor = isObsolete ?  'secondary' : 'primary';
+              return (
+                <ListItem key={key}>
                   <Chip
                     label={chipText}
                     color={chipColor}
                   />
-                  <SnackbarContent
-                    message={`${operatorName}: ${motionName}`}
+                  <Typography
+                    children={`${operatorName}: ${motionName}`}
+                    variant="display1"
+                    className={classes.operatorName}
                   />
-                  {(isAuthor && userID) &&
+                  {(isAuthor) &&
                     <Fragment>
                       <Button
                         component={Link}
@@ -48,7 +70,6 @@ const MotionList = ({ motions, userID, removeMotion }) => {
                         color="secondary"
                         onClick={() => {removeMotion(key)}}
                         children="REMOVE"
-                        disabled={isObsolete}
                       />
                     </Fragment>
                     }
@@ -62,11 +83,10 @@ const MotionList = ({ motions, userID, removeMotion }) => {
                       />
                     }
                 </ListItem>
-                <Divider/>
-              </List>
-            );
-          })}
-    </List>
+              );
+            })}
+      </List>
+    </Paper>
   );
 }
 
@@ -82,4 +102,4 @@ MotionList.propTypes = {
     }).isRequired
   }.isRequired;
 
-export default MotionList;
+export default withStyles(styles)(MotionList);
