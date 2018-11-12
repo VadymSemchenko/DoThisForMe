@@ -9,3 +9,4 @@ export { default as RequestorFirst } from './Requestor/RequestorFirst/RequestorF
 export { default as RequestorReask } from './Requestor/RequestorReask/RequestorReask';
 export { default as RequestorRebid } from './Requestor/RequestorRebid/RequestorRebid';
 export { default as RequestorComplete } from './Requestor/RequestorComplete/RequestorComplete';
+export { default as LanguageSelect } from './LanguageSelect/LanguageSelect';

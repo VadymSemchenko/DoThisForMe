@@ -246,3 +246,8 @@ export const unsetDeals = () => ({
 export const deleteError = () => {
   return { type: actionTypes.DELETE_ERROR };
 }
+
+export const selectLang = code => ({
+  type: actionTypes.SELECT_LANG,
+  payload: code
+});

@@ -10,8 +10,9 @@ import { routeToText } from '../../helpers/routeToText';
 
 const styles = {
     footer: {
-        position: 'absolute',
-        bottom: '30px'
+        paddingTop: "3vh",
+        height: "5vh",
+        paddingBottom: "2vh"
     }
 };
 

@@ -1,10 +1,11 @@
 import React, { Component, Fragment } from 'react';
 import { array, string } from 'prop-types';
-import { IconButton, Button, Grid, Card } from '@material-ui/core/';
+import { IconButton, Button, Grid, Card, withStyles } from '@material-ui/core/';
 import { PlayCircleFilled } from '@material-ui/icons/';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import { compose } from 'recompose';
 
 import {attemptSignIn,
     attemptSignOut,
@@ -13,6 +14,8 @@ import {attemptSignIn,
 } from '../../store/actionCreators';
 import { OPERATOR_CREATE } from '../../constants/routes';
 import MotionsList from '../MotionsList/MotionsList';
+
+import styles from './styles';
 
 class Home extends Component {
 
@@ -27,17 +30,18 @@ class Home extends Component {
     };
 
     render() {
-        const { motions = [], userID } = this.props;
+        const { motions = [], userID, classes } = this.props;
         const { iFrameIsOpen } = this.state;
         const btnText = iFrameIsOpen ? 'CLOSE VIDEO' : 'HOW IT WORKS?';
         const btnColor = iFrameIsOpen ? 'secondary' : 'primary';
         return (
-            <main>
+            <main className={classes.main}>
                 <Grid
                     container
                     direction="column"
                     alignItems="center"
-                    justify="space-around"
+                    justify="space-between"
+                    className={classes.mainContainer}
                 >
                    {iFrameIsOpen && (
                        <Grid item>
@@ -54,11 +58,15 @@ class Home extends Component {
                        </Grid>
                    )}
                     {!iFrameIsOpen && (
-                    <Grid item>
-                        <IconButton
-                            children={<PlayCircleFilled color="primary" />}
-                            onClick={this.toggleIFrame}
-                        />
+                    <Grid item container alignItems="center" justify="center" className={classes.playButtonContainer}>
+                        <Grid item>
+                            <IconButton
+                                size="large"
+                                children={<PlayCircleFilled color="primary" className={classes.playIcon} />}
+                                onClick={this.toggleIFrame}
+                                className={classes.playButton}
+                            />
+                        </Grid>
                     </Grid>)
                     }
                     <Grid item>
@@ -116,4 +124,7 @@ const mapStateToProps = ({
 
 const mapDispatchToProps = dispatch => bindActionCreators({ attemptSignIn, attemptSignOut, joinMotion }, dispatch);
 
-export default connect(mapStateToProps, mapDispatchToProps)(Home);
+export default compose(
+    connect(mapStateToProps, mapDispatchToProps),
+    withStyles(styles)
+)(Home);

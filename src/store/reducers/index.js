@@ -4,6 +4,7 @@ import motionReducer from './motionReducer';
 import loadingReducer from './loadingReducer';
 import errorReducer from './errorReducer';
 import dealReducer from './dealReducer';
+import langReducer from './langReducer';
 
 const rootReducer = {
   authReducer,
@@ -11,6 +12,7 @@ const rootReducer = {
   loadingReducer,
   errorReducer,
   dealReducer,
+  langReducer
 };
 
 export const reducer = combineReducers(rootReducer);

@@ -20,10 +20,9 @@ const styles = {
     margin: '0 2vw'
   },
   listRow: {
-    width: '100%'
+    width: '50px'
   },
   list: {
-    width: '100%',
     marginTop: '50px'
   }
 };

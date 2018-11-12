@@ -1,6 +1,6 @@
 import React, { Fragment } from 'react';
 import { func, bool, string } from 'prop-types';
-import { AppBar, Button, Typography, LinearProgress } from '@material-ui/core';
+import { AppBar, Button, Typography, LinearProgress, Grid, withStyles } from '@material-ui/core';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
@@ -8,10 +8,14 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import { connect } from "react-redux";
 import { bindActionCreators } from 'redux';
 import { withRouter } from 'react-router-dom';
+import { FormattedMessage } from 'react-intl';
+import { compose } from 'recompose';
 
 import { attemptSignIn, attemptSignOut, deleteError } from '../../store/actionCreators';
 import { clearStorage } from '../../store/';
 import { SIGN_IN } from '../../constants/routes';
+import styles from './styles';
+import { LanguageSelect } from '../../components';
 
 const Header = ({
   isLoading,
@@ -22,16 +26,17 @@ const Header = ({
   deleteError,
   location: {
     pathname
-  }
+  },
+  classes
 }) => {
   const isAuth = !!userID;
   const btnColor = isAuth ? 'secondary' : 'primary';
-  const btnTitle = isAuth ? 'Sign Out' : 'Sign In';
+  const btnTitle = isAuth ? <FormattedMessage id="signOut" defaultMessage="Sign Out" /> : <FormattedMessage id="signIn" defaultMessage="Sign In" />;
   const btnOnClick = isAuth ? attemptSignOut : attemptSignIn;
   const isError = !!error;
   const needsAuthButton = pathname !== SIGN_IN;
   return (
-    <Fragment>
+    <header className={classes.header}>
       <Dialog open={isError} onClose={deleteError}>
         <DialogContent>
           <DialogContentText>{error}</DialogContentText>
@@ -45,23 +50,38 @@ const Header = ({
           />
         </DialogActions>
       </Dialog>
-      <AppBar position="static" color="default">
-        <Typography variant="display3" align="center" gutterBottom={true}>Do This For Me</Typography>
-        {isLoading && <LinearProgress />}
-        {needsAuthButton &&
-        <Button
-          variant="contained"
-          color={btnColor}
-          onClick={btnOnClick}
-          children={btnTitle}
-        />}
-        <Button
-          onClick={clearStorage}
-          variant='outlined'
-          children='clear storage'
-        />
+      <AppBar position="static" color="default" className={classes.appbar}>
+        <Grid
+          container
+          justify="space-between"
+          wrap="nowrap"
+        >
+          <Grid item xs={12}
+          >
+            <Typography variant="display3" align="center" gutterBottom={true}>
+              <FormattedMessage id="label" defaultMessage="Do This For Me"/>
+            </Typography>
+            {isLoading && <LinearProgress />}
+          </Grid>
+            {needsAuthButton && (
+              <Grid item xs={2} container justify="flex-end" alignItems="flex-start" className={classes.rightButtons} >
+                <Grid item>
+                  <Button
+                    variant="contained"
+                    color={btnColor}
+                    onClick={btnOnClick}
+                    children={btnTitle}
+                    className={classes.button}
+                  />
+                </Grid>
+                <Grid item>
+                  <LanguageSelect buttonClass={classes.button} />
+                </Grid>
+              </Grid>
+            )}
+        </Grid>
       </AppBar>
-    </Fragment>
+    </header>
   );
 };
 
@@ -75,4 +95,10 @@ Header.propTypes = {
   attemptSignOut: func.isRequired
 };
 
-export default withRouter(connect(mapStateToProps, mapDispatchToProps)(Header));
+
+
+export default compose(
+  withRouter,
+  connect(mapStateToProps, mapDispatchToProps),
+  withStyles(styles)
+  )(Header);
